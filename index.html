@@ -3404,7 +3404,12 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
   $("sync-close").addEventListener("click", function () { $("sync-overlay").hidden = true; });
   $("sync-form").addEventListener("submit", function (e) {
     e.preventDefault();
-    var url = $("sy-url").value.trim().replace(/\/+$/, ""), key = $("sy-key").value.trim(), mail = $("sy-mail").value.trim(), pw = $("sy-pw").value;
+    var url = $("sy-url").value.trim();
+    /* On ne garde que l'adresse du projet, même si elle a été collée avec /rest/v1/ ou sans https:// */
+    if (url && !/^https?:\/\//i.test(url)) url = "https://" + url;
+    try { url = new URL(url).origin; } catch (err) { url = ""; }
+    $("sy-url").value = url || $("sy-url").value;
+    var key = $("sy-key").value.trim(), mail = $("sy-mail").value.trim(), pw = $("sy-pw").value;
     if (!/^https:\/\/[a-z0-9.-]+$/i.test(url)) { renderSyncDialog("L'adresse du projet doit ressembler à https://xxxx.supabase.co"); return; }
     if (!key || !mail || !pw) { renderSyncDialog("Remplis les quatre champs."); return; }
     renderSyncDialog("Connexion en cours.");
