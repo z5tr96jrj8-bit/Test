@@ -1888,10 +1888,22 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
     return (n > 0 ? Math.max(1, Math.round(n / 1024)) : 0) + " Ko";
   }
   function renderStore() {
+    if (sync && cloud && onlineSizes) {
+      /* Connecté : on affiche la place prise par tes données dans la base en ligne (500 Mo sur la formule gratuite). */
+      var tot = 0; Object.keys(onlineSizes).forEach(function (k) { tot += onlineSizes[k]; });
+      var lim = 500 * 1024 * 1024, p = Math.min(100, tot / lim * 100);
+      $("store-text").textContent = "Stockage en ligne : " + fmtSize(tot) + " / 500 Mo (" + (p < 1 && tot > 0 ? "moins de 1" : Math.round(p)) + " %)";
+      $("store-fill").style.width = Math.max(tot > 0 ? 1 : 0, p) + "%";
+      $("store-fill").classList.toggle("warn", p >= 80);
+      $("store-track").setAttribute("aria-valuenow", String(Math.round(p)));
+      $("store-track").setAttribute("aria-label", "Stockage utilisé en ligne");
+      return;
+    }
+    $("store-track").setAttribute("aria-label", "Stockage utilisé sur cet appareil");
     var used = 0;
     try { used = (localStorage.getItem(STORE_KEY) || "").length * 2; } catch (e) {}
     var pct = Math.min(100, used / STORE_LIMIT * 100);
-    $("store-text").textContent = "Stockage : " + fmtSize(used) + " / 5 Mo (" + (pct < 1 && used > 0 ? "moins de 1" : Math.round(pct)) + " %)";
+    $("store-text").textContent = "Stockage sur cet appareil : " + fmtSize(used) + " / 5 Mo (" + (pct < 1 && used > 0 ? "moins de 1" : Math.round(pct)) + " %)";
     $("store-fill").style.width = Math.max(used > 0 ? 1 : 0, pct) + "%";
     $("store-fill").classList.toggle("warn", pct >= 80);
     $("store-track").setAttribute("aria-valuenow", String(Math.round(pct)));
@@ -3328,6 +3340,8 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
   /* ============ Synchronisation en ligne, facultative (base Supabase de l'utilisateur) ============ */
   var SYNC_KEY = "carnet-de-tags.sync";
   var sync = null;   // { url, key, email, refresh, access, exp }
+  var onlineSizes = null;   // taille de chaque document en ligne, en octets
+  function byteSize(o) { try { return new Blob([JSON.stringify(o)]).size; } catch (e) { return 0; } }
   function saveSync() {
     try {
       if (sync) localStorage.setItem(SYNC_KEY, JSON.stringify({ url: sync.url, key: sync.key, email: sync.email, refresh: sync.refresh }));
@@ -3380,12 +3394,14 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
       doc: function (id) {
         return { set: function (body) {
           return sbFetch("carnet_docs?on_conflict=user_id,id", { method: "POST", headers: { Prefer: "resolution=merge-duplicates,return=minimal" },
-            body: JSON.stringify([{ id: id, body: body, updated_at: Number(body.updatedAt) || Date.now() }]) }).catch(syncLost);
+            body: JSON.stringify([{ id: id, body: body, updated_at: Number(body.updatedAt) || Date.now() }]) })
+            .then(function (r) { if (!onlineSizes) onlineSizes = {}; onlineSizes[id] = byteSize(body); renderStore(); return r; }).catch(syncLost);
         } };
       },
       limit: function () { return this; },
       get: function () {
         return sbFetch("carnet_docs?select=id,body").then(function (rows) {
+          onlineSizes = {}; (rows || []).forEach(function (r) { onlineSizes[r.id] = byteSize(r.body); }); renderStore();
           return { docs: (rows || []).map(function (r) { return { id: r.id, data: function () { return r.body; } }; }) };
         }).catch(syncLost);
       }
@@ -3427,7 +3443,7 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
     });
   });
   $("sync-off").addEventListener("click", function () {
-    sync = null; saveSync(); cloud = null; dirty = {}; setCloudState("local");
+    sync = null; saveSync(); cloud = null; dirty = {}; onlineSizes = null; setCloudState("local");
     renderSyncDialog("Synchronisation désactivée. Tes matchs restent sur cet appareil."); renderHome();
   });
   function pullIfIdle() { if (cloud && !flushing && !Object.keys(dirty).length) pull(); }
