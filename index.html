@@ -843,6 +843,9 @@ body { overflow-x: hidden; }
 .tag-list [data-tolist] { display: none; }
 .cat-head { gap: 4px; margin: -4px 0 2px -8px; }
 .home-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.sync-line { margin: 0 0 10px; }
+#sync-form { display: grid; gap: 10px; margin-bottom: 12px; }
+#sync-form .actions { justify-content: flex-start; }
 /* Accueil « Lanceur » : gris anthracite, nom centré, trois tuiles carrées */
 body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #141518; }
 .hero, .hero[id] { border-left: 0; background: transparent; color: #F1F2F3; min-height: calc(100vh - 64px); overflow: visible; }
@@ -927,9 +930,11 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
   <div class="home-tools">
     <h2 class="list-title">Mes projets</h2>
     <span class="home-actions"><button class="btn small" id="btn-backup" type="button">Tout sauvegarder</button>
-    <button class="btn small" id="btn-import" type="button">Importer</button></span>
+    <button class="btn small" id="btn-import" type="button">Importer</button>
+    <button class="btn small" id="btn-sync" type="button">Synchronisation</button></span>
     <input class="file-input" id="import-file" type="file" accept=".json,application/json" tabindex="-1" aria-hidden="true">
   </div>
+  <p class="hint sync-line" id="sync-line"></p>
   <ul class="match-list" id="match-list"></ul>
   <p class="empty" id="match-empty" hidden>Aucun projet pour l'instant. Reviens à l'accueil et choisis « Nouveau match ».</p>
   </div>
@@ -1112,6 +1117,26 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
     </section>
     </div>
 
+  </div>
+</div>
+
+<div class="overlay" id="sync-overlay" hidden>
+  <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="sync-title">
+    <h2 id="sync-title">Synchronisation en ligne</h2>
+    <p>Relie l'outil à ta base Supabase pour retrouver tes matchs sur tous tes appareils. À faire une fois sur chaque appareil.</p>
+    <form id="sync-form" autocomplete="off">
+      <div class="field"><label for="sy-url">Adresse du projet</label><input id="sy-url" inputmode="url" autocapitalize="off" spellcheck="false" placeholder="https://xxxx.supabase.co"></div>
+      <div class="field"><label for="sy-key">Clé publique (anon ou publishable)</label><input id="sy-key" autocapitalize="off" spellcheck="false"></div>
+      <div class="field"><label for="sy-mail">E-mail du compte créé dans Supabase</label><input id="sy-mail" type="email" autocapitalize="off"></div>
+      <div class="field"><label for="sy-pw">Mot de passe</label><input id="sy-pw" type="password"></div>
+      <div class="actions"><button class="btn primary" type="submit">Se connecter</button></div>
+    </form>
+    <div id="sync-on" hidden>
+      <p id="sync-who"></p>
+      <div class="actions"><button class="btn" type="button" id="sync-off">Désactiver sur cet appareil</button></div>
+    </div>
+    <div class="msg" id="sync-msg" role="status"></div>
+    <div class="actions"><button class="btn" type="button" id="sync-close">Fermer</button></div>
   </div>
 </div>
 
@@ -1421,10 +1446,11 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
     var txt = {
       local: "Enregistré sur cet appareil",
       syncing: "Sauvegarde en cours",
-      synced: "Sauvegardé sur ton compte",
+      synced: "Synchronisé en ligne",
       error: "Enregistré sur cet appareil, sauvegarde en attente"
     }[cloudState];
     $("sync-home").textContent = txt;
+    var sl = $("sync-line"); if (sl) sl.textContent = sync && cloud ? txt : "Enregistré sur cet appareil uniquement. Touche « Synchronisation » pour relier tes appareils.";
   }
   function markDirty(id) {
     if (!cloud) return;
@@ -2947,8 +2973,8 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
     var tries = 0;
     var iv = setInterval(function () {
       tries++;
-      if (cloudState === "synced") { clearInterval(iv); showToast("Sauvegardé sur cet appareil et sur ton compte.", false); }
-      else if (cloudState === "error" || cloudState === "local" || tries > 30) { clearInterval(iv); showToast("Sauvegardé sur cet appareil. Le compte sera mis à jour au retour du réseau.", false); }
+      if (cloudState === "synced") { clearInterval(iv); showToast("Sauvegardé sur cet appareil et en ligne.", false); }
+      else if (cloudState === "error" || cloudState === "local" || tries > 30) { clearInterval(iv); showToast("Sauvegardé sur cet appareil. L'envoi en ligne reprendra au retour du réseau.", false); }
     }, 300);
   });
   $("export-project").addEventListener("click", function () {
@@ -2973,10 +2999,10 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
         var n = 0;
         Object.keys(o.all).forEach(function (k) {
           var v = o.all[k];
-          if (k === "panel") { if (v && Array.isArray(v.buttons)) { matches.panel = { id: "panel", kind: "panel", v: 2, h: v.h >= 1 ? 1 : 0, buttons: normLayout(v.buttons), updatedAt: Date.now() }; layoutCache = { stamp: null, list: null }; } return; }
+          if (k === "panel") { if (v && Array.isArray(v.buttons)) { matches.panel = { id: "panel", kind: "panel", v: 2, h: v.h >= 1 ? 1 : 0, buttons: normLayout(v.buttons), updatedAt: Date.now() }; layoutCache = { stamp: null, list: null }; markDirty("panel"); } return; }
           var im = importMatch(v); if (!im) return;
           if (/^m[a-z0-9]{6,24}$/.test(k)) im.id = k;
-          matches[im.id] = im; n++;
+          matches[im.id] = im; markDirty(im.id); n++;
         });
         saveLocal(); renderHome();
         showToast(n + (n > 1 ? " matchs restaurés." : " match restauré."), false);
@@ -3268,6 +3294,116 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
       .then(function () { showToast("Sauvegarde complète enregistrée dans tes téléchargements.", false); },
             function () { showToast("La sauvegarde n'a pas pu être enregistrée.", false); });
   });
+
+  /* ============ Synchronisation en ligne, facultative (base Supabase de l'utilisateur) ============ */
+  var SYNC_KEY = "carnet-de-tags.sync";
+  var sync = null;   // { url, key, email, refresh, access, exp }
+  function saveSync() {
+    try {
+      if (sync) localStorage.setItem(SYNC_KEY, JSON.stringify({ url: sync.url, key: sync.key, email: sync.email, refresh: sync.refresh }));
+      else localStorage.removeItem(SYNC_KEY);
+    } catch (e) {}
+  }
+  function sbAuth(grant, body, cfg) {
+    return fetch(cfg.url + "/auth/v1/token?grant_type=" + grant, { method: "POST", headers: { apikey: cfg.key, "Content-Type": "application/json" }, body: JSON.stringify(body) })
+      .then(function (r) {
+        return r.json().catch(function () { return {}; }).then(function (j) {
+          if (!r.ok || !j.access_token) throw { code: r.status >= 500 ? "unavailable" : "auth", message: j.error_description || j.msg || j.message || "Connexion refusée." };
+          return j;
+        });
+      }, function () { throw { code: "unavailable", message: "Pas de réseau, ou adresse du projet incorrecte." }; });
+  }
+  function sbToken() {
+    if (!sync) return Promise.reject({ code: "auth" });
+    if (sync.access && Date.now() < sync.exp - 60000) return Promise.resolve(sync.access);
+    if (!sync.refreshing) {
+      var cfg = sync;
+      cfg.refreshing = sbAuth("refresh_token", { refresh_token: cfg.refresh }, cfg).then(function (j) {
+        cfg.access = j.access_token; cfg.refresh = j.refresh_token || cfg.refresh; cfg.exp = Date.now() + (j.expires_in || 3600) * 1000;
+        cfg.refreshing = null; if (sync === cfg) saveSync();
+        return cfg.access;
+      }, function (e) { cfg.refreshing = null; throw e; });
+    }
+    return sync.refreshing;
+  }
+  function sbFetch(path, opts) {
+    return sbToken().then(function (tok) {
+      opts = opts || {};
+      var h = { apikey: sync.key, Authorization: "Bearer " + tok, "Content-Type": "application/json" };
+      Object.keys(opts.headers || {}).forEach(function (k) { h[k] = opts.headers[k]; });
+      opts.headers = h;
+      return fetch(sync.url + "/rest/v1/" + path, opts).then(function (r) {
+        return r.text().then(function (t) {
+          if (!r.ok) throw { code: (r.status >= 500 || r.status === 429) ? "unavailable" : (r.status === 401 ? "auth" : "invalid_argument"), message: t };
+          return t ? JSON.parse(t) : null;
+        });
+      }, function () { throw { code: "unavailable" }; });
+    });
+  }
+  function syncLost(e) {
+    if (e && e.code === "auth") { cloud = null; setCloudState("local"); showToast("Synchronisation arrêtée : reconnecte-toi dans « Synchronisation ».", false); }
+    if (e && e.code === "invalid_argument") showToast("La base en ligne a refusé l'enregistrement. Vérifie que la table a bien été créée.", false);
+    throw e;
+  }
+  function makeCloud() {
+    return {
+      doc: function (id) {
+        return { set: function (body) {
+          return sbFetch("carnet_docs?on_conflict=user_id,id", { method: "POST", headers: { Prefer: "resolution=merge-duplicates,return=minimal" },
+            body: JSON.stringify([{ id: id, body: body, updated_at: Number(body.updatedAt) || Date.now() }]) }).catch(syncLost);
+        } };
+      },
+      limit: function () { return this; },
+      get: function () {
+        return sbFetch("carnet_docs?select=id,body").then(function (rows) {
+          return { docs: (rows || []).map(function (r) { return { id: r.id, data: function () { return r.body; } }; }) };
+        }).catch(syncLost);
+      }
+    };
+  }
+  function renderSyncDialog(msg) {
+    var on = !!(sync && cloud);
+    $("sync-form").hidden = on; $("sync-on").hidden = !on;
+    if (on) $("sync-who").textContent = "Connecté en tant que " + sync.email + ".";
+    $("sync-msg").textContent = msg || "";
+  }
+  $("btn-sync").addEventListener("click", function () {
+    if (sync) { $("sy-url").value = sync.url; $("sy-key").value = sync.key; $("sy-mail").value = sync.email || ""; }
+    renderSyncDialog(""); $("sync-overlay").hidden = false;
+  });
+  $("sync-close").addEventListener("click", function () { $("sync-overlay").hidden = true; });
+  $("sync-form").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var url = $("sy-url").value.trim().replace(/\/+$/, ""), key = $("sy-key").value.trim(), mail = $("sy-mail").value.trim(), pw = $("sy-pw").value;
+    if (!/^https:\/\/[a-z0-9.-]+$/i.test(url)) { renderSyncDialog("L'adresse du projet doit ressembler à https://xxxx.supabase.co"); return; }
+    if (!key || !mail || !pw) { renderSyncDialog("Remplis les quatre champs."); return; }
+    renderSyncDialog("Connexion en cours.");
+    var cfg = { url: url, key: key, email: mail };
+    sbAuth("password", { email: mail, password: pw }, cfg).then(function (j) {
+      cfg.access = j.access_token; cfg.refresh = j.refresh_token; cfg.exp = Date.now() + (j.expires_in || 3600) * 1000;
+      sync = cfg; saveSync(); $("sy-pw").value = "";
+      cloud = makeCloud();
+      return pull().then(function () {
+        renderSyncDialog(cloud && cloudState !== "error" ? "Synchronisation active. Tes matchs sont envoyés en ligne." : "Connecté, mais la base a refusé l'accès. Vérifie que la table a bien été créée.");
+        renderHome();
+      });
+    }, function (err) {
+      renderSyncDialog(err.code === "unavailable" ? err.message : "Connexion refusée : vérifie la clé, l'e-mail et le mot de passe.");
+    });
+  });
+  $("sync-off").addEventListener("click", function () {
+    sync = null; saveSync(); cloud = null; dirty = {}; setCloudState("local");
+    renderSyncDialog("Synchronisation désactivée. Tes matchs restent sur cet appareil."); renderHome();
+  });
+  function pullIfIdle() { if (cloud && !flushing && !Object.keys(dirty).length) pull(); }
+  $("go-projects").addEventListener("click", pullIfIdle);
+  $("btn-back").addEventListener("click", pullIfIdle);
+  setInterval(function () { if (!currentMatchId && !panelMode && document.visibilityState === "visible") pullIfIdle(); }, 30000);
+  try {
+    var so = JSON.parse(localStorage.getItem(SYNC_KEY) || "null");
+    if (so && so.url && so.key && so.refresh) { sync = so; cloud = makeCloud(); pull(); }
+  } catch (e) {}
+  renderSync();
 
 })();
 </script>
