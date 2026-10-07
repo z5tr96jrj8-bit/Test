@@ -842,10 +842,19 @@ body { overflow-x: hidden; }
 }
 .tag-list [data-tolist] { display: none; }
 .cat-head { gap: 4px; margin: -4px 0 2px -8px; }
+.store-bar { width: min(360px, 100%); display: grid; gap: 6px; margin-top: -12px; }
+.store-text { font-size: 13px; color: #A3A8B0; font-variant-numeric: tabular-nums; }
+.store-track { display: block; height: 6px; border-radius: 3px; background: #24272C; overflow: hidden; }
+.store-fill { display: block; height: 100%; width: 0; background: #F1F2F3; border-radius: 3px; }
+.store-fill.warn { background: #EAB308; }
 .home-actions { display: flex; gap: 8px; flex-wrap: wrap; }
 .sync-line { margin: 0 0 10px; }
 #sync-form { display: grid; gap: 10px; margin-bottom: 12px; }
 #sync-form .actions { justify-content: flex-start; }
+.sync-icon { position: absolute; top: 4px; right: 4px; width: 48px; height: 48px; padding: 0; border: 1px solid #30333A; border-radius: 50%; background: #1C1E22; color: #F1F2F3; display: flex; align-items: center; justify-content: center; }
+.sync-icon:hover, .sync-icon:active { border-color: #F1F2F3; }
+.sync-icon .dot { position: absolute; top: 2px; right: 2px; width: 12px; height: 12px; border-radius: 50%; background: #6B7078; border: 2px solid #141518; }
+.sync-icon.on .dot { background: #34C26B; }
 /* Accueil « Lanceur » : gris anthracite, nom centré, trois tuiles carrées */
 body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #141518; }
 .hero, .hero[id] { border-left: 0; background: transparent; color: #F1F2F3; min-height: calc(100vh - 64px); overflow: visible; }
@@ -879,6 +888,7 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
 <!-- ================= Accueil ================= -->
 <div class="wrap" id="view-home">
   <div class="hero" id="home-menu">
+    <button class="sync-icon" id="btn-sync" type="button" aria-label="Connexion et synchronisation" title="Connexion"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8.2" r="3.7"/><path d="M4.5 20c.9-3.6 3.9-5.6 7.5-5.6s6.6 2 7.5 5.6"/></svg><span class="dot"></span></button>
     <div class="hero-center">
       <h1 class="hero-title">Carnet de tags</h1>
       <nav class="hero-nav" aria-label="Raccourcis">
@@ -895,6 +905,10 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
           <span class="ht">Modifier le panel</span>
         </button>
       </nav>
+      <div class="store-bar" id="store-bar">
+        <span class="store-text" id="store-text"></span>
+        <span class="store-track" role="progressbar" aria-label="Stockage utilisé sur cet appareil" aria-valuemin="0" aria-valuemax="100" id="store-track"><span class="store-fill" id="store-fill"></span></span>
+      </div>
     </div>
     <span id="sync-home" hidden></span><span id="tile-projects" hidden></span>
   </div>
@@ -930,8 +944,7 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
   <div class="home-tools">
     <h2 class="list-title">Mes projets</h2>
     <span class="home-actions"><button class="btn small" id="btn-backup" type="button">Tout sauvegarder</button>
-    <button class="btn small" id="btn-import" type="button">Importer</button>
-    <button class="btn small" id="btn-sync" type="button">Synchronisation</button></span>
+    <button class="btn small" id="btn-import" type="button">Importer</button></span>
     <input class="file-input" id="import-file" type="file" accept=".json,application/json" tabindex="-1" aria-hidden="true">
   </div>
   <p class="hint sync-line" id="sync-line"></p>
@@ -1450,7 +1463,8 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
       error: "Enregistré sur cet appareil, sauvegarde en attente"
     }[cloudState];
     $("sync-home").textContent = txt;
-    var sl = $("sync-line"); if (sl) sl.textContent = sync && cloud ? txt : "Enregistré sur cet appareil uniquement. Touche « Synchronisation » pour relier tes appareils.";
+    var sl = $("sync-line"); if (sl) sl.textContent = sync && cloud ? txt : "Enregistré sur cet appareil uniquement. Touche l’icône de connexion sur l’accueil pour relier tes appareils.";
+    var sb = $("btn-sync"); if (sb) { var son = !!(sync && cloud); sb.classList.toggle("on", son); sb.setAttribute("aria-label", son ? "Connexion et synchronisation (connecté)" : "Connexion et synchronisation (non connecté)"); }
   }
   function markDirty(id) {
     if (!cloud) return;
@@ -1867,7 +1881,23 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
     if (m.phase === "break") return "pause entre deux périodes";
     return "en cours, " + PERIODS[m.period].name;
   }
+  /* Place prise par les matchs et le pupitre dans le stockage du navigateur (limite d'environ 5 Mo). */
+  var STORE_LIMIT = 5 * 1024 * 1024;
+  function fmtSize(n) {
+    if (n >= 1024 * 1024) return (n / 1024 / 1024).toFixed(1).replace(".", ",") + " Mo";
+    return (n > 0 ? Math.max(1, Math.round(n / 1024)) : 0) + " Ko";
+  }
+  function renderStore() {
+    var used = 0;
+    try { used = (localStorage.getItem(STORE_KEY) || "").length * 2; } catch (e) {}
+    var pct = Math.min(100, used / STORE_LIMIT * 100);
+    $("store-text").textContent = "Stockage : " + fmtSize(used) + " / 5 Mo (" + (pct < 1 && used > 0 ? "moins de 1" : Math.round(pct)) + " %)";
+    $("store-fill").style.width = Math.max(used > 0 ? 1 : 0, pct) + "%";
+    $("store-fill").classList.toggle("warn", pct >= 80);
+    $("store-track").setAttribute("aria-valuenow", String(Math.round(pct)));
+  }
   function renderHome() {
+    renderStore();
     var list = $("match-list");
     list.textContent = "";
     var ms = liveMatches();
@@ -3341,7 +3371,7 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
     });
   }
   function syncLost(e) {
-    if (e && e.code === "auth") { cloud = null; setCloudState("local"); showToast("Synchronisation arrêtée : reconnecte-toi dans « Synchronisation ».", false); }
+    if (e && e.code === "auth") { cloud = null; setCloudState("local"); showToast("Synchronisation arrêtée : reconnecte-toi avec l'icône de connexion sur l'accueil.", false); }
     if (e && e.code === "invalid_argument") showToast("La base en ligne a refusé l'enregistrement. Vérifie que la table a bien été créée.", false);
     throw e;
   }
