@@ -851,6 +851,9 @@ body { overflow-x: hidden; }
 .sync-line { margin: 0 0 10px; }
 #sync-form { display: grid; gap: 10px; margin-bottom: 12px; }
 #sync-form .actions { justify-content: flex-start; }
+.sync-adv { margin-top: 4px; }
+.sync-adv summary { min-height: 44px; display: flex; align-items: center; color: var(--muted); font-size: 14px; cursor: pointer; }
+.sync-adv .field { margin-bottom: 10px; }
 .sync-icon { position: absolute; top: 4px; right: 4px; width: 48px; height: 48px; padding: 0; border: 1px solid #30333A; border-radius: 50%; background: #1C1E22; color: #F1F2F3; display: flex; align-items: center; justify-content: center; }
 .sync-icon:hover, .sync-icon:active { border-color: #F1F2F3; }
 .sync-icon .dot { position: absolute; top: 2px; right: 2px; width: 12px; height: 12px; border-radius: 50%; background: #6B7078; border: 2px solid #141518; }
@@ -1135,14 +1138,16 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
 
 <div class="overlay" id="sync-overlay" hidden>
   <div class="dialog" role="dialog" aria-modal="true" aria-labelledby="sync-title">
-    <h2 id="sync-title">Synchronisation en ligne</h2>
-    <p>Relie l'outil à ta base Supabase pour retrouver tes matchs sur tous tes appareils. À faire une fois sur chaque appareil.</p>
+    <h2 id="sync-title">Connexion</h2>
+    <p>Connecte-toi pour retrouver tes matchs sur tous tes appareils. À faire une fois sur chaque appareil.</p>
     <form id="sync-form" autocomplete="off">
-      <div class="field"><label for="sy-url">Adresse du projet</label><input id="sy-url" inputmode="url" autocapitalize="off" spellcheck="false" placeholder="https://xxxx.supabase.co"></div>
-      <div class="field"><label for="sy-key">Clé publique (anon ou publishable)</label><input id="sy-key" autocapitalize="off" spellcheck="false"></div>
-      <div class="field"><label for="sy-mail">E-mail du compte créé dans Supabase</label><input id="sy-mail" type="email" autocapitalize="off"></div>
+      <div class="field"><label for="sy-mail">E-mail</label><input id="sy-mail" type="email" autocapitalize="off"></div>
       <div class="field"><label for="sy-pw">Mot de passe</label><input id="sy-pw" type="password"></div>
       <div class="actions"><button class="btn primary" type="submit">Se connecter</button></div>
+      <details class="sync-adv" id="sync-adv"><summary>Réglages avancés</summary>
+      <div class="field"><label for="sy-url">Adresse du projet</label><input id="sy-url" inputmode="url" autocapitalize="off" spellcheck="false" placeholder="https://xxxx.supabase.co"></div>
+      <div class="field"><label for="sy-key">Clé publique (anon ou publishable)</label><input id="sy-key" autocapitalize="off" spellcheck="false"></div>
+      </details>
     </form>
     <div id="sync-on" hidden>
       <p id="sync-who"></p>
@@ -3339,6 +3344,8 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
 
   /* ============ Synchronisation en ligne, facultative (base Supabase de l'utilisateur) ============ */
   var SYNC_KEY = "carnet-de-tags.sync";
+  /* Base du propriétaire de ce site. La clé « publishable » est faite pour être publique : l'accès aux données dépend du compte et des règles de la base. */
+  var SYNC_DEFAULT = { url: "https://ywsxfikvjaxlwtzpogck.supabase.co", key: "sb_publishable_hgZrsWt9l1R2LaE78y_vaQ_7oykggbZ" };
   var sync = null;   // { url, key, email, refresh, access, exp }
   var onlineSizes = null;   // taille de chaque document en ligne, en octets
   function byteSize(o) { try { return new Blob([JSON.stringify(o)]).size; } catch (e) { return 0; } }
@@ -3414,20 +3421,22 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
     $("sync-msg").textContent = msg || "";
   }
   $("btn-sync").addEventListener("click", function () {
-    if (sync) { $("sy-url").value = sync.url; $("sy-key").value = sync.key; $("sy-mail").value = sync.email || ""; }
+    $("sy-url").value = sync ? sync.url : SYNC_DEFAULT.url; $("sy-key").value = sync ? sync.key : SYNC_DEFAULT.key;
+    if (sync) $("sy-mail").value = sync.email || "";
     renderSyncDialog(""); $("sync-overlay").hidden = false;
   });
   $("sync-close").addEventListener("click", function () { $("sync-overlay").hidden = true; });
   $("sync-form").addEventListener("submit", function (e) {
     e.preventDefault();
-    var url = $("sy-url").value.trim();
+    var url = $("sy-url").value.trim() || SYNC_DEFAULT.url;
     /* On ne garde que l'adresse du projet, même si elle a été collée avec /rest/v1/ ou sans https:// */
     if (url && !/^https?:\/\//i.test(url)) url = "https://" + url;
     try { url = new URL(url).origin; } catch (err) { url = ""; }
     $("sy-url").value = url || $("sy-url").value;
-    var key = $("sy-key").value.trim(), mail = $("sy-mail").value.trim(), pw = $("sy-pw").value;
-    if (!/^https:\/\/[a-z0-9.-]+$/i.test(url)) { renderSyncDialog("L'adresse du projet doit ressembler à https://xxxx.supabase.co"); return; }
-    if (!key || !mail || !pw) { renderSyncDialog("Remplis les quatre champs."); return; }
+    var key = $("sy-key").value.trim() || SYNC_DEFAULT.key, mail = $("sy-mail").value.trim(), pw = $("sy-pw").value;
+    if (!/^https:\/\/[a-z0-9.-]+$/i.test(url)) { renderSyncDialog("L'adresse du projet, dans les réglages avancés, doit ressembler à https://xxxx.supabase.co"); $("sync-adv").open = true; return; }
+    if (!mail || !pw) { renderSyncDialog("Saisis ton e-mail et ton mot de passe."); return; }
+    if (!key) { renderSyncDialog("Il manque la clé publique, dans les réglages avancés."); $("sync-adv").open = true; return; }
     renderSyncDialog("Connexion en cours.");
     var cfg = { url: url, key: key, email: mail };
     sbAuth("password", { email: mail, password: pw }, cfg).then(function (j) {
@@ -3439,7 +3448,7 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
         renderHome();
       });
     }, function (err) {
-      renderSyncDialog(err.code === "unavailable" ? err.message : "Connexion refusée : vérifie la clé, l'e-mail et le mot de passe.");
+      renderSyncDialog(err.code === "unavailable" ? err.message : "Connexion refusée : vérifie ton e-mail et ton mot de passe.");
     });
   });
   $("sync-off").addEventListener("click", function () {
