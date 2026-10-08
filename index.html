@@ -1022,6 +1022,7 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
         <div class="pp-row" id="pp-team-row"><span>Équipe</span><div class="pp-seg" id="pp-team"><button type="button" data-team="home"></button><button type="button" data-team="away"></button></div></div>
         <div class="pp-row" id="pp-color-row"><span>Couleur</span><div class="swatches" id="pp-color"></div></div>
         <div class="pp-row" id="pp-pat-row"><span>Motif</span><div class="swatches pats" id="pp-pat"></div></div>
+        <div class="pp-row" id="pp-bd-row"><span>Bord</span><div class="swatches" id="pp-bd"></div></div>
         <div class="pp-row" id="pp-res-row"><label for="pp-res">Résultats</label><input id="pp-res" maxlength="90" placeholder="ex. Réussie, Perdue"></div>
         <div class="pp-actions">
           <button class="btn small" id="pp-dup" type="button">Dupliquer</button>
@@ -1297,8 +1298,9 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
     if (pat === "grid") return { image: "linear-gradient(" + ink + " 1px, transparent 1px), linear-gradient(90deg, " + ink + " 1px, transparent 1px)", size: "12px 12px", repeat: "repeat", position: "-1px -1px" };
     return { image: "none", size: "auto", repeat: "repeat", position: "0 0" };
   }
-  function paint(node, color, pat) {
+  function paint(node, color, pat, bd) {
     var p = patternCss(pat || "none", color);
+    if (bd !== undefined) { node.style.border = bd ? "2px solid " + bd : ""; }
     node.style.backgroundColor = color;
     node.style.backgroundImage = p.image;
     node.style.backgroundSize = p.size;
@@ -1335,6 +1337,7 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
       if (c + w > COLS) c = COLS - w;
       var it = { id: id, type: b.type === "label" ? "label" : "button", label: b.label.slice(0, 30), c: c, r: clampInt(b.r, 0, MAX_ROW, 0), w: w, h: clampInt(b.h, 1, 4, 1) };
       it.pat = isPat(b.pat) ? b.pat : "none";
+      it.bd = isHex(b.bd) ? b.bd.toUpperCase() : "";
       if (it.type === "label") it.color = isHex(b.color) ? b.color.toUpperCase() : "";
       if (it.type === "button") {
         it.key = typeof b.key === "string" && b.key ? b.key.slice(0, 48) : id;
@@ -2073,12 +2076,12 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
       if (it.type === "label") {
         node = el("div", "pad-grp" + (it.color ? " filled" : ""));
         node.appendChild(el("span", "", it.label));
-        if (it.color) paint(node, it.color, it.pat);
+        if (it.color) paint(node, it.color, it.pat, it.bd); else if (it.bd) node.style.border = "2px solid " + it.bd;
       }
       else {
         node = el("button", "pb" + (it.flag ? " flag" : ""));
         node.type = "button"; node.dataset.team = it.flag ? "" : it.team;
-        paint(node, it.color, it.pat);
+        paint(node, it.color, it.pat, it.bd);
         node.setAttribute("aria-label", it.label);
         node.appendChild(el("span", "", it.label));
         if (!padEdit) node.disabled = !canTag;
@@ -2139,6 +2142,20 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
       if (it.color) paint(pt.children[k], it.color, pt.children[k].dataset.pat);
       pt.children[k].setAttribute("aria-pressed", String(pt.children[k].dataset.pat === (it.pat || "none")));
     }
+    var bdw = $("pp-bd");
+    if (!bdw.children.length) {
+      var nb = el("button", "no-fill", "Par défaut"); nb.type = "button"; nb.dataset.bd = "none"; bdw.appendChild(nb);
+      PRESETS.forEach(function (c) { var b = el("button"); b.type = "button"; b.dataset.bd = c[0]; b.style.background = "transparent"; b.style.border = "4px solid " + c[0]; b.setAttribute("aria-label", "Bord " + c[1]); bdw.appendChild(b); });
+      var lab3 = el("label", "custom-color");
+      lab3.appendChild(el("span", "", "Autre"));
+      var inp3 = el("input"); inp3.type = "color"; inp3.id = "pp-bd-custom"; inp3.setAttribute("aria-label", "Choisir une autre couleur de bord");
+      lab3.appendChild(inp3); bdw.appendChild(lab3);
+    }
+    for (var q = 0; q < bdw.children.length; q++) {
+      var dv = bdw.children[q].dataset.bd; if (!dv) continue;
+      bdw.children[q].setAttribute("aria-pressed", String(dv === "none" ? !it.bd : dv === it.bd));
+    }
+    var bc = $("pp-bd-custom"); if (bc && document.activeElement !== bc && it.bd) bc.value = it.bd.toLowerCase();
     if (!isBtn) return;
     var tb = $("pp-team").children;
     for (var i = 0; i < tb.length; i++) { tb[i].textContent = teamName(m, tb[i].dataset.team); tb[i].setAttribute("aria-pressed", String(tb[i].dataset.team === it.team)); }
@@ -3198,7 +3215,7 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
     clearTimeout(padTimer);
     var go = function () { commitLayout(); if (m) { renderEvents(m); renderLog(m); renderSummary(m); renderCurrent(m); } };
     var live = itemById(padSel), ln = live ? $("event-grid").querySelector('[data-item="' + live.id + '"]') : null;
-    if (live && ln && live.color) paint(ln, live.color, live.pat);
+    if (live && ln && live.color) paint(ln, live.color, live.pat, live.bd);
     if (now) go(); else padTimer = setTimeout(go, 500);
   }
   function nextFreeRow() { var r = 0; layout().forEach(function (it) { r = Math.max(r, it.r + it.h); }); return Math.min(MAX_ROW, r); }
@@ -3225,6 +3242,18 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
     if (b.dataset.color === "none" && it.type === "label") { it.color = ""; padChanged(true); }
     else if (isHex(b.dataset.color)) { it.color = b.dataset.color; padChanged(true); }
   });
+  $("pp-bd").addEventListener("click", function (e) {
+    var b = e.target.closest("button"); var it = itemById(padSel); if (!b || !it) return;
+    if (b.dataset.bd === "none") { it.bd = ""; padChanged(true); }
+    else if (isHex(b.dataset.bd)) { it.bd = b.dataset.bd; padChanged(true); }
+  });
+  $("pp-bd").addEventListener("input", function (e) {
+    var it = itemById(padSel); if (!it || e.target.id !== "pp-bd-custom" || !isHex(e.target.value)) return;
+    it.bd = e.target.value.toUpperCase();
+    var node = $("event-grid").querySelector('[data-item="' + it.id + '"]');
+    if (node) node.style.border = "2px solid " + it.bd;
+    padChanged(false);
+  });
   $("pp-pat").addEventListener("click", function (e) {
     var b = e.target.closest("button"); var it = itemById(padSel); if (!b || !it || !isPat(b.dataset.pat)) return;
     it.pat = b.dataset.pat; padChanged(true);
@@ -3233,12 +3262,12 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
     var it = itemById(padSel); if (!it || e.target.id !== "pp-custom" || !isHex(e.target.value)) return;
     it.color = e.target.value.toUpperCase();
     var node = $("event-grid").querySelector('[data-item="' + it.id + '"]');
-    if (node) paint(node, it.color, it.pat);
+    if (node) paint(node, it.color, it.pat, it.bd);
     padChanged(false);
   });
   $("pp-dup").addEventListener("click", function () {
     var it = itemById(padSel); if (!it || it.type !== "button") return;
-    var cp = { id: uid("b"), type: "button", key: uid("k"), label: it.label, team: it.team, color: it.color, pat: it.pat || "none", res: it.res.slice(), c: it.c, r: nextFreeRow(), w: it.w, h: it.h };
+    var cp = { id: uid("b"), type: "button", key: uid("k"), label: it.label, team: it.team, color: it.color, pat: it.pat || "none", bd: it.bd || "", res: it.res.slice(), c: it.c, r: nextFreeRow(), w: it.w, h: it.h };
     layout().push(cp); padSel = cp.id; padChanged(true);
     showToast("Bouton dupliqué, en bas du pupitre.", false);
   });
