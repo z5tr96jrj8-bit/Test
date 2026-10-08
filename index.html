@@ -3425,6 +3425,8 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
 
   /* ============ Démarrage ============ */
   loadLocal();
+  /* iPad / iPhone : la vidéo se mélange à la musique d'une autre app au lieu de la couper (ou d'être coupée par elle). */
+  try { if (navigator.audioSession) navigator.audioSession.type = "ambient"; } catch (e) {}
   try { var d = new Date(); $("f-date").value = d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()); } catch (e) {}
   showHome("menu");
   setInterval(renderClock, 250);
