@@ -556,7 +556,7 @@ table.sum td .n { font-size: 15px; }
 
 /* ---------- Pupitre libre : boutons placés sur une grille de 12 colonnes ---------- */
 .pad-head { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; margin-bottom: 8px; }
-.events .event-grid { display: grid; grid-template-columns: repeat(24, minmax(0, 1fr)); gap: 6px; }
+.events .event-grid { display: grid; grid-template-columns: repeat(48, minmax(0, 1fr)); gap: 2px; }
 .event-grid [data-item] { position: relative; min-width: 0; }
 .event-grid button.pb { min-height: 0; padding: 4px 6px 4px 8px; overflow: hidden; }
 .event-grid button.pb span { overflow: hidden; }
@@ -782,7 +782,7 @@ body { overflow-x: hidden; }
 @media (max-width: 819px) { .videobox { --vmax: 46vh; background: var(--bg); } }
 /* Pupitre compact : boutons plus bas, texte plus petit, colonne plus étroite au profit de la vidéo */
 .events { padding: 8px; }
-.events .event-grid { gap: 4px; }
+.events .event-grid { gap: 2px; }
 .event-grid button.pb, .event-grid button.pb.flag { font-size: 12.5px; padding: 2px 4px; line-height: 1.1; }
 .event-grid .pad-grp { font-size: 10px; padding-bottom: 1px; }
 .event-grid .pad-grp.filled { font-size: 12.5px; }
@@ -1278,7 +1278,7 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
   function events() { return panelEvents().concat([FLAG_EVENT]); }
 
   /* Pupitre libre : chaque bouton a une place (colonne c, ligne r) et une taille (w, h) sur une grille de 12 colonnes. */
-  var COLS = 24, ROW_H = 14, PAD_GAP = 4, MAX_ROW = 160;
+  var COLS = 48, ROW_H = 4, PAD_GAP = 2, MAX_ROW = 600;
   var C_HOME = "#24408A", C_AWAY = "#DC3C41", C_FLAG = "#EAB308";
   var PRESETS = [["#24408A", "Bleu"], ["#DC3C41", "Rouge"], ["#1F7A4D", "Vert"], ["#EAB308", "Jaune"], ["#E8730C", "Orange"], ["#7C3AED", "Violet"], ["#334155", "Gris"], ["#F1F5F9", "Blanc"]];
   var NAMED = { blue: "#24408A", red: "#DC3C41", white: "#F1F5F9", grey: "#334155", yellow: "#EAB308", green: "#1F7A4D" };
@@ -1288,12 +1288,15 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
   function textOn(hex) { var c = rgb(hex); return (0.299 * c[0] + 0.587 * c[1] + 0.114 * c[2]) / 255 > 0.6 ? "#0A1020" : "#FFFFFF"; }
   function tint(hex, a) { var c = rgb(hex); return "rgba(" + c[0] + "," + c[1] + "," + c[2] + "," + a + ")"; }
   var layoutCache = { stamp: null, list: null };
-  var PATTERNS = [["none", "Uni"], ["waves", "Vagues"], ["arcs", "Arcs de cercle"], ["stripes", "Rayures"], ["dots", "Points"], ["grid", "Quadrillage"], ["target", "Cible"]];
+  var PATTERNS = [["none", "Uni"], ["vlines", "Lignes verticales"], ["hlines", "Lignes horizontales"], ["stripes", "Diagonales"], ["grid", "Quadrillage"]];
+  var PAT_OLD = { waves: "hlines", arcs: "stripes", target: "vlines", dots: "grid" };
   function isPat(p) { for (var i = 0; i < PATTERNS.length; i++) if (PATTERNS[i][0] === p) return true; return false; }
   /* Motif dessiné par-dessus la couleur : clair sur fond foncé, sombre sur fond clair. */
   function patternCss(pat, base) {
     var light = textOn(base) === "#FFFFFF";
     var ink = light ? "rgba(255,255,255,.26)" : "rgba(0,0,0,.2)";
+    if (pat === "vlines") return { image: "repeating-linear-gradient(90deg, " + ink + " 0, " + ink + " 1px, transparent 1px, transparent 7px)", size: "auto", repeat: "no-repeat", position: "0 0" };
+    if (pat === "hlines") return { image: "repeating-linear-gradient(0deg, " + ink + " 0, " + ink + " 1px, transparent 1px, transparent 6px)", size: "auto", repeat: "no-repeat", position: "0 0" };
     if (pat === "target") {
       var ring = light ? "rgba(255,255,255,.8)" : "rgba(12,30,70,.88)";
       var svgT = "<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'><circle cx='50' cy='50' r='49' fill='" + base + "'/>";
@@ -1306,7 +1309,7 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
       return { image: "url(\"data:image/svg+xml," + encodeURIComponent(svg) + "\")", size: "36px 14px", repeat: "repeat", position: "0 0" };
     }
     if (pat === "arcs") return { image: "repeating-radial-gradient(circle at 0% 100%, transparent 0, transparent 11px, " + ink + " 11px, " + ink + " 13px)", size: "auto", repeat: "no-repeat", position: "0 0" };
-    if (pat === "stripes") return { image: "repeating-linear-gradient(135deg, transparent 0, transparent 8px, " + ink + " 8px, " + ink + " 10px)", size: "auto", repeat: "no-repeat", position: "0 0" };
+    if (pat === "stripes") return { image: "repeating-linear-gradient(135deg, transparent 0, transparent 7px, " + ink + " 7px, " + ink + " 8px)", size: "auto", repeat: "no-repeat", position: "0 0" };
     if (pat === "dots") return { image: "radial-gradient(circle, " + ink + " 1.6px, transparent 2px)", size: "10px 10px", repeat: "repeat", position: "0 0" };
     if (pat === "grid") return { image: "linear-gradient(" + ink + " 1px, transparent 1px), linear-gradient(90deg, " + ink + " 1px, transparent 1px)", size: "12px 12px", repeat: "repeat", position: "-1px -1px" };
     return { image: "none", size: "auto", repeat: "repeat", position: "0 0" };
@@ -1331,6 +1334,7 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
   }
   /* Grille fine : les anciens pupitres (12 colonnes, lignes de 32 px) sont convertis en 24 colonnes et demi-lignes. */
   function scaleItems(list) { list.forEach(function (it) { it.c *= 2; it.w *= 2; it.r *= 2; it.h *= 2; }); return list; }
+  function toV4(list) { list.forEach(function (it) { it.c *= 2; it.w *= 2; it.r *= 3; it.h *= 3; }); return list; }
   function defaultLayout(evs) {
     var out = headItems(), r = 1, last = null;
     evs.forEach(function (e) {
@@ -1341,7 +1345,7 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
       r++;
     });
     out.push({ id: "a_revoir__f", type: "button", key: FLAG_EVENT.id, label: FLAG_EVENT.label, team: "home", color: C_FLAG, flag: true, res: [], c: 0, r: r, w: 12, h: 1 });
-    return scaleItems(out);
+    return toV4(scaleItems(out));
   }
   function clampInt(v, lo, hi, d) { v = Math.round(Number(v)); if (!isFinite(v)) v = d; return Math.min(hi, Math.max(lo, v)); }
   function normLayout(arr) {
@@ -1352,9 +1356,9 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
       ids[id] = true;
       var w = clampInt(b.w, 1, COLS, 6), c = clampInt(b.c, 0, COLS - 1, 0);
       if (c + w > COLS) c = COLS - w;
-      var it = { id: id, type: b.type === "label" ? "label" : "button", label: b.label.slice(0, 30), c: c, r: clampInt(b.r, 0, MAX_ROW, 0), w: w, h: clampInt(b.h, 1, 40, 1) };
+      var it = { id: id, type: b.type === "label" ? "label" : "button", label: b.label.slice(0, 30), c: c, r: clampInt(b.r, 0, MAX_ROW, 0), w: w, h: clampInt(b.h, 1, 200, 1) };
       it.bw = clampInt(b.bw, 0, 8, 0);
-      it.pat = isPat(b.pat) ? b.pat : "none";
+      it.pat = isPat(b.pat) ? b.pat : (PAT_OLD[b.pat] || "none");
       it.bd = isHex(b.bd) ? b.bd.toUpperCase() : "";
       if (it.type === "label") it.color = isHex(b.color) ? b.color.toUpperCase() : "";
       if (it.type === "button") {
@@ -1373,13 +1377,16 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
     var stamp = p && !p.deleted ? "p" + p.updatedAt : "default";
     if (layoutCache.stamp === stamp && layoutCache.list) return layoutCache.list;
     var list = p && !p.deleted && Array.isArray(p.buttons) ? normLayout(p.buttons) : [];
-    if (list.length && p.v !== 3) {
+    if (list.length && p.v !== 4) {
+      if (p.v !== 3) {
       if (!(p.h >= 1)) {
         /* Ancien pupitre enregistré : on ajoute les deux en-têtes en haut et on décale le reste d'une ligne. */
         list.forEach(function (it) { it.r = it.r + 1; });
         list = headItems().concat(list);
       }
       scaleItems(list);
+      }
+      toV4(list);
     }
     if (!list.length) list = defaultLayout(panelEvents());
     layoutCache = { stamp: stamp, list: list };
@@ -1387,7 +1394,7 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
   }
   function commitLayout() {
     var list = layout();
-    matches.panel = { id: "panel", kind: "panel", v: 3, h: 1, buttons: JSON.parse(JSON.stringify(list)), updatedAt: Date.now() };
+    matches.panel = { id: "panel", kind: "panel", v: 4, h: 1, buttons: JSON.parse(JSON.stringify(list)), updatedAt: Date.now() };
     layoutCache = { stamp: "p" + matches.panel.updatedAt, list: list };
     saveLocal(); markDirty("panel");
   }
@@ -2114,7 +2121,7 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
       grid.appendChild(node);
       maxRow = Math.max(maxRow, it.r + it.h);
     });
-    grid.style.gridTemplateRows = "repeat(" + (maxRow + (padEdit ? 4 : 0)) + ", " + ROW_H + "px)";
+    grid.style.gridTemplateRows = "repeat(" + (maxRow + (padEdit ? 12 : 0)) + ", " + ROW_H + "px)";
     $("pad-tools").hidden = !padEdit; $("pad-edit-hint").hidden = !padEdit;
     $("btn-panel").textContent = padEdit ? "Terminer" : "Modifier les boutons";
     $("btn-panel").classList.toggle("primary", padEdit);
@@ -3197,12 +3204,12 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
       it.c = Math.min(COLS - it.w, Math.max(0, cell.c - drag.dc));
       it.r = Math.min(MAX_ROW, Math.max(0, cell.r - drag.dr));
     } else {
-      it.w = Math.min(COLS - it.c, Math.max(it.type === "label" ? 4 : 2, cell.c - it.c + 1));
-      it.h = Math.min(40, Math.max(1, cell.r - it.r + 1));
+      it.w = Math.min(COLS - it.c, Math.max(it.type === "label" ? 8 : 4, cell.c - it.c + 1));
+      it.h = Math.min(200, Math.max(3, cell.r - it.r + 1));
     }
     drag.node.style.gridColumn = (it.c + 1) + " / span " + it.w;
     drag.node.style.gridRow = (it.r + 1) + " / span " + it.h;
-    var grid = $("event-grid"), need = it.r + it.h + 4, have = grid.style.gridTemplateRows.match(/repeat\((\d+)/);
+    var grid = $("event-grid"), need = it.r + it.h + 12, have = grid.style.gridTemplateRows.match(/repeat\((\d+)/);
     if (!have || +have[1] < need) grid.style.gridTemplateRows = "repeat(" + need + ", " + ROW_H + "px)";
   });
   /* Posé dans un vide trop étroit entre deux éléments : le bouton prend la largeur du vide au lieu de chevaucher. */
@@ -3352,19 +3359,19 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
     l.splice(i, 1); padSel = null; padChanged(true);
   });
   $("pad-add").addEventListener("click", function () {
-    var it = { id: uid("b"), type: "button", key: uid("k"), label: "Nouveau", team: "home", color: C_HOME, res: [], c: 0, r: nextFreeRow(), w: 12, h: 2 };
+    var it = { id: uid("b"), type: "button", key: uid("k"), label: "Nouveau", team: "home", color: C_HOME, res: [], c: 0, r: nextFreeRow(), w: 24, h: 6 };
     layout().push(it); padSel = it.id; padChanged(true);
     $("pp-label").focus(); $("pp-label").select();
   });
   $("pad-add-label").addEventListener("click", function () {
-    var it = { id: uid("b"), type: "label", label: "Titre", color: "", pat: "none", c: 0, r: nextFreeRow(), w: 24, h: 2 };
+    var it = { id: uid("b"), type: "label", label: "Titre", color: "", pat: "none", c: 0, r: nextFreeRow(), w: 48, h: 6 };
     layout().push(it); padSel = it.id; padChanged(true);
     $("pp-label").focus(); $("pp-label").select();
   });
   $("pad-reset").addEventListener("click", function () {
-    var prev = { id: "panel", kind: "panel", v: 3, h: 1, buttons: JSON.parse(JSON.stringify(layout())), updatedAt: Date.now() };
+    var prev = { id: "panel", kind: "panel", v: 4, h: 1, buttons: JSON.parse(JSON.stringify(layout())), updatedAt: Date.now() };
     snapshot(prev);
-    matches.panel = { id: "panel", kind: "panel", v: 3, h: 1, buttons: defaultLayout(DEFAULT_EVENTS), updatedAt: Date.now() + 1 };
+    matches.panel = { id: "panel", kind: "panel", v: 4, h: 1, buttons: defaultLayout(DEFAULT_EVENTS), updatedAt: Date.now() + 1 };
     layoutCache = { stamp: null, list: null }; padSel = null;
     saveLocal(); markDirty("panel");
     renderAll();
