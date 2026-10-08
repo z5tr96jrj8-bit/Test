@@ -893,6 +893,7 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
 .event-grid [data-pat="target"] > span { background: var(--pb-bg); padding: 1px 8px; border-radius: 2px; }
 .bw-seg { grid-template-columns: repeat(6, minmax(0, 1fr)); }
 .bw-seg button { min-height: 40px; }
+#video { cursor: pointer; -webkit-tap-highlight-color: transparent; }
 </style>
 </head>
 <body>
@@ -995,7 +996,7 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
 
   <div class="board" id="board">
     <div class="videobox" id="videobox" hidden>
-      <video id="video" controls playsinline preload="metadata"></video>
+      <video id="video" playsinline webkit-playsinline disablepictureinpicture preload="metadata"></video>
       <div class="video-ask" id="video-ask" hidden>
         <p id="video-ask-text"></p>
         <button class="btn primary" id="video-ask-btn" type="button">Choisir la vidéo</button>
@@ -3425,6 +3426,8 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
 
   /* ============ Démarrage ============ */
   loadLocal();
+  /* Pas de commandes Apple sur la vidéo : un tap sur l'image met en lecture ou en pause. */
+  $("video").addEventListener("click", function () { videoAction("vplay"); });
   /* iPad / iPhone : la vidéo se mélange à la musique d'une autre app au lieu de la couper (ou d'être coupée par elle). */
   try { if (navigator.audioSession) navigator.audioSession.type = "ambient"; } catch (e) {}
   try { var d = new Date(); $("f-date").value = d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()); } catch (e) {}
