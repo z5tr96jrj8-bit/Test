@@ -556,7 +556,7 @@ table.sum td .n { font-size: 15px; }
 
 /* ---------- Pupitre libre : boutons placés sur une grille de 12 colonnes ---------- */
 .pad-head { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; margin-bottom: 8px; }
-.events .event-grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 6px; }
+.events .event-grid { display: grid; grid-template-columns: repeat(24, minmax(0, 1fr)); gap: 6px; }
 .event-grid [data-item] { position: relative; min-width: 0; }
 .event-grid button.pb { min-height: 0; padding: 4px 6px 4px 8px; overflow: hidden; }
 .event-grid button.pb span { overflow: hidden; }
@@ -889,6 +889,10 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
   #view-match .board[data-mode="video"] { grid-template-columns: 328px minmax(0, 1fr); grid-template-areas: "events video" "events clock" "timeline timeline" "bottom bottom"; }
 }
 .inline-rename { position: fixed; z-index: 1000; box-sizing: border-box; padding: 0 10px; background: var(--surface-2); color: var(--ink); border: 2px solid var(--ink); border-radius: 4px; font: 600 15px/1 var(--text, inherit); }
+.event-grid > * { box-sizing: border-box; }
+.event-grid [data-pat="target"] > span { background: var(--pb-bg); padding: 1px 8px; border-radius: 2px; }
+.bw-seg { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+.bw-seg button { min-height: 40px; }
 </style>
 </head>
 <body>
@@ -1024,6 +1028,7 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
         <div class="pp-row" id="pp-color-row"><span>Couleur</span><div class="swatches" id="pp-color"></div></div>
         <div class="pp-row" id="pp-pat-row"><span>Motif</span><div class="swatches pats" id="pp-pat"></div></div>
         <div class="pp-row" id="pp-bd-row"><span>Bord</span><div class="swatches" id="pp-bd"></div></div>
+        <div class="pp-row" id="pp-bw-row"><span>Épaisseur</span><div class="pp-seg bw-seg" id="pp-bw"><button type="button" data-bw="1">1</button><button type="button" data-bw="2">2</button><button type="button" data-bw="3">3</button><button type="button" data-bw="4">4</button><button type="button" data-bw="6">6</button><button type="button" data-bw="8">8</button></div></div>
         <div class="pp-row" id="pp-res-row"><label for="pp-res">Résultats</label><input id="pp-res" maxlength="90" placeholder="ex. Réussie, Perdue"></div>
         <div class="pp-actions">
           <button class="btn small" id="pp-dup" type="button">Dupliquer</button>
@@ -1273,7 +1278,7 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
   function events() { return panelEvents().concat([FLAG_EVENT]); }
 
   /* Pupitre libre : chaque bouton a une place (colonne c, ligne r) et une taille (w, h) sur une grille de 12 colonnes. */
-  var COLS = 12, ROW_H = 32, PAD_GAP = 4, MAX_ROW = 60;
+  var COLS = 24, ROW_H = 14, PAD_GAP = 4, MAX_ROW = 160;
   var C_HOME = "#24408A", C_AWAY = "#DC3C41", C_FLAG = "#EAB308";
   var PRESETS = [["#24408A", "Bleu"], ["#DC3C41", "Rouge"], ["#1F7A4D", "Vert"], ["#EAB308", "Jaune"], ["#E8730C", "Orange"], ["#7C3AED", "Violet"], ["#334155", "Gris"], ["#F1F5F9", "Blanc"]];
   var NAMED = { blue: "#24408A", red: "#DC3C41", white: "#F1F5F9", grey: "#334155", yellow: "#EAB308", green: "#1F7A4D" };
@@ -1283,12 +1288,19 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
   function textOn(hex) { var c = rgb(hex); return (0.299 * c[0] + 0.587 * c[1] + 0.114 * c[2]) / 255 > 0.6 ? "#0A1020" : "#FFFFFF"; }
   function tint(hex, a) { var c = rgb(hex); return "rgba(" + c[0] + "," + c[1] + "," + c[2] + "," + a + ")"; }
   var layoutCache = { stamp: null, list: null };
-  var PATTERNS = [["none", "Uni"], ["waves", "Vagues"], ["arcs", "Arcs de cercle"], ["stripes", "Rayures"], ["dots", "Points"], ["grid", "Quadrillage"]];
+  var PATTERNS = [["none", "Uni"], ["waves", "Vagues"], ["arcs", "Arcs de cercle"], ["stripes", "Rayures"], ["dots", "Points"], ["grid", "Quadrillage"], ["target", "Cible"]];
   function isPat(p) { for (var i = 0; i < PATTERNS.length; i++) if (PATTERNS[i][0] === p) return true; return false; }
   /* Motif dessiné par-dessus la couleur : clair sur fond foncé, sombre sur fond clair. */
   function patternCss(pat, base) {
     var light = textOn(base) === "#FFFFFF";
     var ink = light ? "rgba(255,255,255,.26)" : "rgba(0,0,0,.2)";
+    if (pat === "target") {
+      var ring = light ? "rgba(255,255,255,.8)" : "rgba(12,30,70,.88)";
+      var svgT = "<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'><circle cx='50' cy='50' r='49' fill='" + base + "'/>";
+      [46, 38, 30, 22].forEach(function (rr) { svgT += "<circle cx='50' cy='50' r='" + rr + "' fill='none' stroke='" + ring + "' stroke-width='4'/>"; });
+      svgT += "</svg>";
+      return { image: "url(\"data:image/svg+xml," + encodeURIComponent(svgT) + "\"), repeating-linear-gradient(90deg, " + ring + " 0, " + ring + " 3px, transparent 3px, transparent 8px)", size: "auto 100%, auto", repeat: "no-repeat, no-repeat", position: "center, 0 0" };
+    }
     if (pat === "waves") {
       var svg = "<svg xmlns='http://www.w3.org/2000/svg' width='36' height='14' viewBox='0 0 36 14'><path d='M0 7 Q9 -1 18 7 T36 7' fill='none' stroke='" + (light ? "white" : "black") + "' stroke-opacity='" + (light ? ".3" : ".22") + "' stroke-width='1.6'/></svg>";
       return { image: "url(\"data:image/svg+xml," + encodeURIComponent(svg) + "\")", size: "36px 14px", repeat: "repeat", position: "0 0" };
@@ -1299,9 +1311,11 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
     if (pat === "grid") return { image: "linear-gradient(" + ink + " 1px, transparent 1px), linear-gradient(90deg, " + ink + " 1px, transparent 1px)", size: "12px 12px", repeat: "repeat", position: "-1px -1px" };
     return { image: "none", size: "auto", repeat: "repeat", position: "0 0" };
   }
-  function paint(node, color, pat, bd) {
+  function borderCss(bd, bw) { var w = bw || (bd ? 2 : 0); return w ? w + "px solid " + (bd || "rgba(255,255,255,.28)") : ""; }
+  function paint(node, color, pat, bd, bw) {
     var p = patternCss(pat || "none", color);
-    if (bd !== undefined) { node.style.border = bd ? "2px solid " + bd : ""; }
+    if (bd !== undefined) { node.style.border = borderCss(bd, bw); }
+    node.dataset.pat = pat || "none"; node.style.setProperty("--pb-bg", color);
     node.style.backgroundColor = color;
     node.style.backgroundImage = p.image;
     node.style.backgroundSize = p.size;
@@ -1315,6 +1329,8 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
       { id: "head_def", type: "label", label: "Défensive", color: C_AWAY, pat: "none", c: 6, r: 0, w: 6, h: 1 }
     ];
   }
+  /* Grille fine : les anciens pupitres (12 colonnes, lignes de 32 px) sont convertis en 24 colonnes et demi-lignes. */
+  function scaleItems(list) { list.forEach(function (it) { it.c *= 2; it.w *= 2; it.r *= 2; it.h *= 2; }); return list; }
   function defaultLayout(evs) {
     var out = headItems(), r = 1, last = null;
     evs.forEach(function (e) {
@@ -1325,7 +1341,7 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
       r++;
     });
     out.push({ id: "a_revoir__f", type: "button", key: FLAG_EVENT.id, label: FLAG_EVENT.label, team: "home", color: C_FLAG, flag: true, res: [], c: 0, r: r, w: 12, h: 1 });
-    return out;
+    return scaleItems(out);
   }
   function clampInt(v, lo, hi, d) { v = Math.round(Number(v)); if (!isFinite(v)) v = d; return Math.min(hi, Math.max(lo, v)); }
   function normLayout(arr) {
@@ -1336,7 +1352,8 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
       ids[id] = true;
       var w = clampInt(b.w, 1, COLS, 6), c = clampInt(b.c, 0, COLS - 1, 0);
       if (c + w > COLS) c = COLS - w;
-      var it = { id: id, type: b.type === "label" ? "label" : "button", label: b.label.slice(0, 30), c: c, r: clampInt(b.r, 0, MAX_ROW, 0), w: w, h: clampInt(b.h, 1, 4, 1) };
+      var it = { id: id, type: b.type === "label" ? "label" : "button", label: b.label.slice(0, 30), c: c, r: clampInt(b.r, 0, MAX_ROW, 0), w: w, h: clampInt(b.h, 1, 40, 1) };
+      it.bw = clampInt(b.bw, 0, 8, 0);
       it.pat = isPat(b.pat) ? b.pat : "none";
       it.bd = isHex(b.bd) ? b.bd.toUpperCase() : "";
       if (it.type === "label") it.color = isHex(b.color) ? b.color.toUpperCase() : "";
@@ -1356,10 +1373,13 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
     var stamp = p && !p.deleted ? "p" + p.updatedAt : "default";
     if (layoutCache.stamp === stamp && layoutCache.list) return layoutCache.list;
     var list = p && !p.deleted && Array.isArray(p.buttons) ? normLayout(p.buttons) : [];
-    if (list.length && !(p.h >= 1)) {
-      /* Ancien pupitre enregistré : on ajoute les deux en-têtes en haut et on décale le reste d'une ligne. */
-      list.forEach(function (it) { it.r = Math.min(MAX_ROW, it.r + 1); });
-      list = headItems().concat(list);
+    if (list.length && p.v !== 3) {
+      if (!(p.h >= 1)) {
+        /* Ancien pupitre enregistré : on ajoute les deux en-têtes en haut et on décale le reste d'une ligne. */
+        list.forEach(function (it) { it.r = it.r + 1; });
+        list = headItems().concat(list);
+      }
+      scaleItems(list);
     }
     if (!list.length) list = defaultLayout(panelEvents());
     layoutCache = { stamp: stamp, list: list };
@@ -1367,7 +1387,7 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
   }
   function commitLayout() {
     var list = layout();
-    matches.panel = { id: "panel", kind: "panel", v: 2, h: 1, buttons: JSON.parse(JSON.stringify(list)), updatedAt: Date.now() };
+    matches.panel = { id: "panel", kind: "panel", v: 3, h: 1, buttons: JSON.parse(JSON.stringify(list)), updatedAt: Date.now() };
     layoutCache = { stamp: "p" + matches.panel.updatedAt, list: list };
     saveLocal(); markDirty("panel");
   }
@@ -2077,12 +2097,12 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
       if (it.type === "label") {
         node = el("div", "pad-grp" + (it.color ? " filled" : ""));
         node.appendChild(el("span", "", it.label));
-        if (it.color) paint(node, it.color, it.pat, it.bd); else if (it.bd) node.style.border = "2px solid " + it.bd;
+        if (it.color) paint(node, it.color, it.pat, it.bd, it.bw); else node.style.border = borderCss(it.bd, it.bw);
       }
       else {
         node = el("button", "pb" + (it.flag ? " flag" : ""));
         node.type = "button"; node.dataset.team = it.flag ? "" : it.team;
-        paint(node, it.color, it.pat, it.bd);
+        paint(node, it.color, it.pat, it.bd, it.bw);
         node.setAttribute("aria-label", it.label);
         node.appendChild(el("span", "", it.label));
         if (!padEdit) node.disabled = !canTag;
@@ -2094,7 +2114,7 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
       grid.appendChild(node);
       maxRow = Math.max(maxRow, it.r + it.h);
     });
-    grid.style.gridTemplateRows = "repeat(" + (maxRow + (padEdit ? 2 : 0)) + ", " + ROW_H + "px)";
+    grid.style.gridTemplateRows = "repeat(" + (maxRow + (padEdit ? 4 : 0)) + ", " + ROW_H + "px)";
     $("pad-tools").hidden = !padEdit; $("pad-edit-hint").hidden = !padEdit;
     $("btn-panel").textContent = padEdit ? "Terminer" : "Modifier les boutons";
     $("btn-panel").classList.toggle("primary", padEdit);
@@ -2157,6 +2177,8 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
       bdw.children[q].setAttribute("aria-pressed", String(dv === "none" ? !it.bd : dv === it.bd));
     }
     var bc = $("pp-bd-custom"); if (bc && document.activeElement !== bc && it.bd) bc.value = it.bd.toLowerCase();
+    var bwv = it.bw || (it.bd ? 2 : 1), bws = $("pp-bw").children;
+    for (var z = 0; z < bws.length; z++) bws[z].setAttribute("aria-pressed", String(+bws[z].dataset.bw === bwv));
     if (!isBtn) return;
     var tb = $("pp-team").children;
     for (var i = 0; i < tb.length; i++) { tb[i].textContent = teamName(m, tb[i].dataset.team); tb[i].setAttribute("aria-pressed", String(tb[i].dataset.team === it.team)); }
@@ -3175,12 +3197,12 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
       it.c = Math.min(COLS - it.w, Math.max(0, cell.c - drag.dc));
       it.r = Math.min(MAX_ROW, Math.max(0, cell.r - drag.dr));
     } else {
-      it.w = Math.min(COLS - it.c, Math.max(it.type === "label" ? 2 : 1, cell.c - it.c + 1));
-      it.h = Math.min(4, Math.max(1, cell.r - it.r + 1));
+      it.w = Math.min(COLS - it.c, Math.max(it.type === "label" ? 4 : 2, cell.c - it.c + 1));
+      it.h = Math.min(40, Math.max(1, cell.r - it.r + 1));
     }
     drag.node.style.gridColumn = (it.c + 1) + " / span " + it.w;
     drag.node.style.gridRow = (it.r + 1) + " / span " + it.h;
-    var grid = $("event-grid"), need = it.r + it.h + 2, have = grid.style.gridTemplateRows.match(/repeat\((\d+)/);
+    var grid = $("event-grid"), need = it.r + it.h + 4, have = grid.style.gridTemplateRows.match(/repeat\((\d+)/);
     if (!have || +have[1] < need) grid.style.gridTemplateRows = "repeat(" + need + ", " + ROW_H + "px)";
   });
   /* Posé dans un vide trop étroit entre deux éléments : le bouton prend la largeur du vide au lieu de chevaucher. */
@@ -3265,7 +3287,7 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
     clearTimeout(padTimer);
     var go = function () { commitLayout(); if (m) { renderEvents(m); renderLog(m); renderSummary(m); renderCurrent(m); } };
     var live = itemById(padSel), ln = live ? $("event-grid").querySelector('[data-item="' + live.id + '"]') : null;
-    if (live && ln && live.color) paint(ln, live.color, live.pat, live.bd);
+    if (live && ln && live.color) paint(ln, live.color, live.pat, live.bd, live.bw);
     if (now) go(); else padTimer = setTimeout(go, 500);
   }
   function nextFreeRow() { var r = 0; layout().forEach(function (it) { r = Math.max(r, it.r + it.h); }); return Math.min(MAX_ROW, r); }
@@ -3297,11 +3319,15 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
     if (b.dataset.bd === "none") { it.bd = ""; padChanged(true); }
     else if (isHex(b.dataset.bd)) { it.bd = b.dataset.bd; padChanged(true); }
   });
+  $("pp-bw").addEventListener("click", function (e) {
+    var b = e.target.closest("button"); var it = itemById(padSel); if (!b || !it) return;
+    it.bw = clampInt(b.dataset.bw, 1, 8, 2); padChanged(true);
+  });
   $("pp-bd").addEventListener("input", function (e) {
     var it = itemById(padSel); if (!it || e.target.id !== "pp-bd-custom" || !isHex(e.target.value)) return;
     it.bd = e.target.value.toUpperCase();
     var node = $("event-grid").querySelector('[data-item="' + it.id + '"]');
-    if (node) node.style.border = "2px solid " + it.bd;
+    if (node) node.style.border = borderCss(it.bd, it.bw);
     padChanged(false);
   });
   $("pp-pat").addEventListener("click", function (e) {
@@ -3312,12 +3338,12 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
     var it = itemById(padSel); if (!it || e.target.id !== "pp-custom" || !isHex(e.target.value)) return;
     it.color = e.target.value.toUpperCase();
     var node = $("event-grid").querySelector('[data-item="' + it.id + '"]');
-    if (node) paint(node, it.color, it.pat, it.bd);
+    if (node) paint(node, it.color, it.pat, it.bd, it.bw);
     padChanged(false);
   });
   $("pp-dup").addEventListener("click", function () {
     var it = itemById(padSel); if (!it || it.type !== "button") return;
-    var cp = { id: uid("b"), type: "button", key: uid("k"), label: it.label, team: it.team, color: it.color, pat: it.pat || "none", bd: it.bd || "", res: it.res.slice(), c: it.c, r: nextFreeRow(), w: it.w, h: it.h };
+    var cp = { id: uid("b"), type: "button", key: uid("k"), label: it.label, team: it.team, color: it.color, pat: it.pat || "none", bd: it.bd || "", bw: it.bw || 0, res: it.res.slice(), c: it.c, r: nextFreeRow(), w: it.w, h: it.h };
     layout().push(cp); padSel = cp.id; padChanged(true);
     showToast("Bouton dupliqué, en bas du pupitre.", false);
   });
@@ -3326,19 +3352,19 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
     l.splice(i, 1); padSel = null; padChanged(true);
   });
   $("pad-add").addEventListener("click", function () {
-    var it = { id: uid("b"), type: "button", key: uid("k"), label: "Nouveau", team: "home", color: C_HOME, res: [], c: 0, r: nextFreeRow(), w: 6, h: 1 };
+    var it = { id: uid("b"), type: "button", key: uid("k"), label: "Nouveau", team: "home", color: C_HOME, res: [], c: 0, r: nextFreeRow(), w: 12, h: 2 };
     layout().push(it); padSel = it.id; padChanged(true);
     $("pp-label").focus(); $("pp-label").select();
   });
   $("pad-add-label").addEventListener("click", function () {
-    var it = { id: uid("b"), type: "label", label: "Titre", color: "", pat: "none", c: 0, r: nextFreeRow(), w: 12, h: 1 };
+    var it = { id: uid("b"), type: "label", label: "Titre", color: "", pat: "none", c: 0, r: nextFreeRow(), w: 24, h: 2 };
     layout().push(it); padSel = it.id; padChanged(true);
     $("pp-label").focus(); $("pp-label").select();
   });
   $("pad-reset").addEventListener("click", function () {
-    var prev = { id: "panel", kind: "panel", v: 2, h: 1, buttons: JSON.parse(JSON.stringify(layout())), updatedAt: Date.now() };
+    var prev = { id: "panel", kind: "panel", v: 3, h: 1, buttons: JSON.parse(JSON.stringify(layout())), updatedAt: Date.now() };
     snapshot(prev);
-    matches.panel = { id: "panel", kind: "panel", v: 2, h: 1, buttons: defaultLayout(DEFAULT_EVENTS), updatedAt: Date.now() + 1 };
+    matches.panel = { id: "panel", kind: "panel", v: 3, h: 1, buttons: defaultLayout(DEFAULT_EVENTS), updatedAt: Date.now() + 1 };
     layoutCache = { stamp: null, list: null }; padSel = null;
     saveLocal(); markDirty("panel");
     renderAll();
