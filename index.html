@@ -1288,8 +1288,8 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
   function textOn(hex) { var c = rgb(hex); return (0.299 * c[0] + 0.587 * c[1] + 0.114 * c[2]) / 255 > 0.6 ? "#0A1020" : "#FFFFFF"; }
   function tint(hex, a) { var c = rgb(hex); return "rgba(" + c[0] + "," + c[1] + "," + c[2] + "," + a + ")"; }
   var layoutCache = { stamp: null, list: null };
-  var PATTERNS = [["none", "Uni"], ["vlines", "Lignes verticales"], ["hlines", "Lignes horizontales"], ["stripes", "Diagonales"], ["grid", "Quadrillage"]];
-  var PAT_OLD = { waves: "hlines", arcs: "stripes", target: "vlines", dots: "grid" };
+  var PATTERNS = [["none", "Uni"], ["vlines", "Lignes verticales"], ["hlines", "Lignes horizontales"], ["stripes", "Diagonales"], ["grid", "Quadrillage"], ["target", "Cercles"]];
+  var PAT_OLD = { waves: "hlines", arcs: "stripes", dots: "grid" };
   function isPat(p) { for (var i = 0; i < PATTERNS.length; i++) if (PATTERNS[i][0] === p) return true; return false; }
   /* Motif dessiné par-dessus la couleur : clair sur fond foncé, sombre sur fond clair. */
   function patternCss(pat, base) {
@@ -1300,9 +1300,9 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
     if (pat === "target") {
       var ring = light ? "rgba(255,255,255,.8)" : "rgba(12,30,70,.88)";
       var svgT = "<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'><circle cx='50' cy='50' r='49' fill='" + base + "'/>";
-      [46, 38, 30, 22].forEach(function (rr) { svgT += "<circle cx='50' cy='50' r='" + rr + "' fill='none' stroke='" + ring + "' stroke-width='4'/>"; });
+      [47, 40, 33, 26].forEach(function (rr) { svgT += "<circle cx='50' cy='50' r='" + rr + "' fill='none' stroke='" + ring + "' stroke-width='3.5'/>"; });
       svgT += "</svg>";
-      return { image: "url(\"data:image/svg+xml," + encodeURIComponent(svgT) + "\"), repeating-linear-gradient(90deg, " + ring + " 0, " + ring + " 3px, transparent 3px, transparent 8px)", size: "auto 100%, auto", repeat: "no-repeat, no-repeat", position: "center, 0 0" };
+      return { image: "url(\"data:image/svg+xml," + encodeURIComponent(svgT) + "\"), repeating-linear-gradient(90deg, " + ring + " 0, " + ring + " 3px, transparent 3px, transparent 7px)", size: "auto 100%, auto", repeat: "no-repeat, no-repeat", position: "center, 0 0" };
     }
     if (pat === "waves") {
       var svg = "<svg xmlns='http://www.w3.org/2000/svg' width='36' height='14' viewBox='0 0 36 14'><path d='M0 7 Q9 -1 18 7 T36 7' fill='none' stroke='" + (light ? "white" : "black") + "' stroke-opacity='" + (light ? ".3" : ".22") + "' stroke-width='1.6'/></svg>";
