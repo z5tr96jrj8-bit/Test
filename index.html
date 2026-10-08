@@ -888,6 +888,7 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
 @media (min-width: 820px) {
   #view-match .board[data-mode="video"] { grid-template-columns: 328px minmax(0, 1fr); grid-template-areas: "events video" "events clock" "timeline timeline" "bottom bottom"; }
 }
+.inline-rename { position: fixed; z-index: 1000; box-sizing: border-box; padding: 0 10px; background: var(--surface-2); color: var(--ink); border: 2px solid var(--ink); border-radius: 4px; font: 600 15px/1 var(--text, inherit); }
 </style>
 </head>
 <body>
@@ -1379,7 +1380,7 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
     return null;
   }
   function evDef(id) { return evFind(id) || { id: id, label: id, res: [] }; }
-  function tagLabel(t) { if (t.lbl) return t.lbl; var e = evFind(t.ev); return e ? e.label : t.ev; }
+  function tagLabel(t) { if (t.btn) { var bs = padButtons(); for (var bi = 0; bi < bs.length; bi++) if (bs[bi].id === t.btn) return bs[bi].label; } if (t.lbl) return t.lbl; var e = evFind(t.ev); return e ? e.label : t.ev; }
   function isFlag(t) { return t.ev === FLAG_EVENT.id; }
   function resFor(tag) {
     var lbl = tagLabel(tag), l = layout(), any = null;
@@ -2436,7 +2437,7 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
       lab.appendChild(el("span", "n", String(r.n)));
       lab.appendChild(el("span", "nm", r.label));
       lab.appendChild(el("i", "", String(r.tags.length)));
-      lab.setAttribute("title", r.label);
+      lab.setAttribute("title", r.label); lab.dataset.row = r.key;
       labels.appendChild(lab);
       var row = el("div", "tl-row");
       var track = el("span", "tl-track");
@@ -3208,6 +3209,55 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
   }
   $("event-grid").addEventListener("pointerup", endDrag);
   $("event-grid").addEventListener("pointercancel", endDrag);
+  /* Double tap : renommer un bouton du pupitre (en mode modification) ou une ligne de la timeline */
+  function onDoubleTap(box, sel, ok, cb) {
+    var start = null, last = null;
+    box.addEventListener("pointerdown", function (e) { var n = e.target.closest(sel); start = n && ok() ? { x: e.clientX, y: e.clientY, n: n } : null; });
+    box.addEventListener("pointerup", function (e) {
+      if (!start) return;
+      var n = e.target.closest(sel) || start.n, key = n.dataset.item || n.dataset.row, moved = Math.abs(e.clientX - start.x) + Math.abs(e.clientY - start.y) > 12;
+      start = null;
+      if (moved || !key) { last = null; return; }
+      var now = Date.now();
+      if (last && last.key === key && now - last.t < 450) { last = null; e.preventDefault(); cb(key); }
+      else last = { key: key, t: now };
+    });
+  }
+  function inlineRename(anchor, value, done) {
+    if (!anchor) return;
+    var old = document.querySelector(".inline-rename"); if (old) old.remove();
+    var r = anchor.getBoundingClientRect();
+    var inp = el("input", "inline-rename"); inp.maxLength = 30; inp.value = value; inp.setAttribute("aria-label", "Nouveau nom");
+    inp.style.left = r.left + "px"; inp.style.top = r.top + "px"; inp.style.width = Math.max(160, r.width) + "px"; inp.style.height = Math.max(36, r.height) + "px";
+    document.body.appendChild(inp);
+    var closed = false;
+    function close(save) {
+      if (closed) return; closed = true;
+      var v = inp.value.trim(); inp.remove();
+      if (save && v && v !== value) done(v);
+    }
+    inp.addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); close(true); } else if (e.key === "Escape") close(false); });
+    inp.addEventListener("blur", function () { close(true); });
+    setTimeout(function () { inp.focus(); inp.select(); }, 0);
+  }
+  onDoubleTap($("event-grid"), "[data-item]", function () { return padEdit; }, function (id) {
+    var it = itemById(id); if (!it) return;
+    inlineRename($("event-grid").querySelector('[data-item="' + id + '"]'), it.label, function (v) { it.label = v; padSel = it.id; padChanged(true); });
+  });
+  onDoubleTap($("tl-labels"), ".tl-label", function () { return true; }, function (key) {
+    var m = cur(); if (!m) return;
+    var anchor = $("tl-labels").querySelector('[data-row="' + key.replace(/"/g, '\\"') + '"]');
+    if (key.indexOf("b:") === 0) {
+      var it = itemById(key.slice(2)); if (!it) return;
+      inlineRename(anchor, it.label, function (v) { it.label = v; padChanged(true); renderTimeline(m); });
+    } else {
+      var row = tlRows(m).filter(function (r) { return r.key === key; })[0]; if (!row) return;
+      inlineRename(anchor, row.label, function (v) {
+        row.tags.forEach(function (t) { t.lbl = v; });
+        touch(m); renderAll(m);
+      });
+    }
+  });
 
   var padTimer = null;
   function padChanged(now) {
