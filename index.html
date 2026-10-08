@@ -884,6 +884,10 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
 .panel-host { max-width: 560px; }
 @media (min-width: 820px) { .board[data-mode="video"] { grid-template-rows: auto 1fr; grid-template-columns: minmax(0, 2.2fr) minmax(0, 1fr); } }
 @media (max-width: 560px) { .panel-row, .panel-head { grid-template-columns: minmax(0, 1fr) minmax(0, .8fr) auto; } .panel-row .res-in { grid-column: 1 / 3; grid-row: 2; } .tl-label { padding: 0 8px; font-size: 12px; } .clock { font-size: 34px; } }
+/* Tag pad à gauche, vidéo à droite */
+@media (min-width: 820px) {
+  #view-match .board[data-mode="video"] { grid-template-columns: 328px minmax(0, 1fr); grid-template-areas: "events video" "events clock" "timeline timeline" "bottom bottom"; }
+}
 </style>
 </head>
 <body>
