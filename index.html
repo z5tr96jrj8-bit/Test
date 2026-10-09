@@ -894,42 +894,6 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
 .bw-seg { grid-template-columns: repeat(6, minmax(0, 1fr)); }
 .bw-seg button { min-height: 40px; }
 #video { cursor: pointer; -webkit-tap-highlight-color: transparent; }
-.mv-home { margin-bottom: 22px; }
-.mv-title { font-size: 15px; font-weight: 600; margin: 0 0 10px; color: var(--muted); }
-.mv-new { display: grid; gap: 8px; padding: 14px; margin-bottom: 12px; background: var(--surface); border: 1px solid var(--line); border-radius: 6px; }
-.mv-new input#mv-name { min-height: 44px; }
-.mv-lab { margin: 6px 0 0; font-size: 14px; color: var(--muted); }
-.mv-checks { display: grid; gap: 6px; max-height: 320px; overflow-y: auto; }
-.mv-checks label { display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 0 10px; border: 1px solid var(--line); border-radius: 4px; }
-.mv-checks input { width: 20px; height: 20px; }
-#view-multi .topbar { margin-bottom: 8px; }
-#view-multi .top-actions { gap: 6px; }
-.mv-board { display: grid; gap: 8px; grid-template-columns: minmax(0, 1fr); }
-@media (min-width: 900px) { .mv-board { grid-template-columns: 340px minmax(0, 1fr); align-items: start; } .mv-main { position: sticky; top: 8px; } }
-.mv-main { order: -1; }
-@media (min-width: 900px) { .mv-main { order: 0; } }
-.mv-side { background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 8px 12px 10px; min-width: 0; }
-.mv-side-head { display: flex; align-items: center; gap: 6px; }
-.mv-side-head .pane-title { flex: 1; border: 0; margin: 0; }
-#mv-star-only[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
-.mv-vids { margin: 0 0 6px; font-size: 13px; color: var(--muted); border-bottom: 1px solid var(--line); padding-bottom: 8px; }
-#mv-cats { max-height: calc(100vh - 200px); overflow-y: auto; }
-#mv-cats .mv-grp { padding: 10px 4px 4px; font-size: 12px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); border-top: 1px solid var(--line); }
-#mv-cats li:first-child.mv-grp { border-top: 0; }
-#mv-cats .mv-clip { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; }
-#mv-cats .mv-clip > button:first-child { border-top: 0; grid-template-columns: 54px minmax(0, 1fr); }
-#mv-cats .mv-clip .tm { font-variant-numeric: tabular-nums; text-decoration: underline; }
-#mv-cats .mv-clip .novid { color: var(--muted); font-size: 12px; font-weight: 400; }
-#mv-cats .mv-clip.on > button:first-child { box-shadow: inset 2px 0 0 var(--ink); background: var(--surface-2); }
-#mv-cats .st { width: 44px; min-height: 44px; border: 0; background: transparent; font-size: 20px; color: var(--muted); display: block; padding: 0; text-align: center; }
-#mv-cats .st[aria-pressed="true"] { color: #EAB308; }
-.mv-player { position: relative; background: #000; border-radius: 6px; overflow: hidden; aspect-ratio: 16 / 9; }
-.mv-player video { width: 100%; height: 100%; display: block; object-fit: contain; cursor: pointer; -webkit-tap-highlight-color: transparent; }
-.mv-empty { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 16px; text-align: center; color: #F1F2F3; background: #000; }
-.mv-empty[hidden] { display: none; }
-.mv-bar { display: flex; align-items: center; gap: 6px; margin-top: 8px; padding: 6px 8px; background: var(--surface); border: 1px solid var(--line); border-radius: 6px; }
-.mv-now { flex: 1; min-width: 0; font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-#mv-star[aria-pressed="true"] { color: #EAB308; border-color: #EAB308; }
 </style>
 </head>
 <body>
@@ -996,21 +960,6 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
     <button class="btn small" id="btn-import" type="button">Importer</button></span>
     <input class="file-input" id="import-file" type="file" accept=".json,application/json" tabindex="-1" aria-hidden="true">
   </div>
-  <div class="mv-home">
-    <div class="home-tools">
-      <h3 class="mv-title">Analyses sur plusieurs matchs</h3>
-      <button class="btn small" id="mv-new-btn" type="button">Nouvelle analyse</button>
-    </div>
-    <form class="mv-new" id="mv-new" hidden autocomplete="off">
-      <label for="mv-name">Nom de l'analyse</label>
-      <input id="mv-name" maxlength="40" placeholder="ex. Pressing défensif">
-      <p class="mv-lab">Matchs à regrouper</p>
-      <div class="mv-checks" id="mv-checks"></div>
-      <div class="actions"><button class="btn" type="button" id="mv-new-cancel">Annuler</button><button class="btn primary" type="submit">Créer l'analyse</button><span class="form-error" id="mv-new-err" role="alert"></span></div>
-    </form>
-    <ul class="match-list" id="mv-list"></ul>
-  </div>
-  <h3 class="mv-title">Matchs</h3>
   <p class="hint sync-line" id="sync-line"></p>
   <ul class="match-list" id="match-list"></ul>
   <p class="empty" id="match-empty" hidden>Aucun projet pour l'instant. Reviens à l'accueil et choisis « Nouveau match ».</p>
@@ -1026,44 +975,6 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
   </div>
   <p class="hint panel-note">Ce pupitre est utilisé pour tous tes matchs. Les changements sont enregistrés au fur et à mesure.</p>
   <div class="panel-host" id="panel-host"></div>
-</div>
-
-<!-- ================= Analyse multi-matchs ================= -->
-<div class="wrap" id="view-multi" hidden>
-  <div class="topbar">
-    <button class="btn icon-btn" id="mv-back" type="button" aria-label="Retour à mes projets" title="Mes projets"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"/></svg></button>
-    <div class="score" id="mv-head"></div>
-    <div class="top-actions">
-      <button class="btn small" id="mv-edit" type="button">Matchs</button>
-      <button class="btn small" id="mv-load" type="button">Charger les vidéos</button>
-      <input class="file-input" id="mv-files" type="file" accept="video/*" multiple tabindex="-1" aria-hidden="true">
-      <input class="file-input" id="mv-one" type="file" accept="video/*" tabindex="-1" aria-hidden="true">
-    </div>
-  </div>
-  <div class="mv-board">
-    <section class="panel mv-side">
-      <div class="mv-side-head">
-        <button class="btn icon-btn" id="mv-cat-back" type="button" aria-label="Tous les tags" hidden><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"/></svg></button>
-        <h2 class="pane-title" id="mv-side-title">Par tag</h2>
-        <button class="btn small" id="mv-star-only" type="button" aria-pressed="false">★ Sélection</button>
-      </div>
-      <p class="mv-vids" id="mv-vids"></p>
-      <ul class="cat-list" id="mv-cats"></ul>
-    </section>
-    <section class="mv-main">
-      <div class="mv-player">
-        <video id="mv-video" playsinline webkit-playsinline disablepictureinpicture preload="metadata"></video>
-        <div class="mv-empty" id="mv-empty"><p id="mv-empty-text">Choisis un tag à gauche, puis un clip.</p><button class="btn primary" id="mv-empty-btn" type="button" hidden>Choisir la vidéo</button></div>
-      </div>
-      <div class="mv-bar">
-        <button class="btn icon-btn" id="mv-prev" type="button" aria-label="Clip précédent" title="Clip précédent"><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true"><path d="M6 5h2v14H6zM20 5v14L9 12z"/></svg></button>
-        <button class="btn icon-btn" id="mv-play" type="button" aria-label="Lecture ou pause"><svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor" aria-hidden="true"><path d="M7 4v16l13-8z"/></svg></button>
-        <button class="btn icon-btn" id="mv-next" type="button" aria-label="Clip suivant" title="Clip suivant"><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true"><path d="M16 5h2v14h-2zM4 5v14l11-7z"/></svg></button>
-        <span class="mv-now" id="mv-now"></span>
-        <button class="btn small" id="mv-star" type="button" aria-pressed="false" hidden>☆ Garder</button>
-      </div>
-    </section>
-  </div>
 </div>
 
 <!-- ================= Match ================= -->
@@ -2061,7 +1972,6 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
       li.appendChild(acts);
       list.appendChild(li);
     });
-    renderMvHome();
     renderSync();
   }
 
@@ -2626,7 +2536,6 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
   }
   function renderAll() {
     if (panelMode) { renderEvents(panelDummy); return; }
-    if (mvId && !$("view-multi").hidden) { renderMulti(); return; }
     if (currentMatchId && cur()) { renderMatch(); } else { showHome(); }
   }
   var homeScreen = "menu";
@@ -2638,7 +2547,6 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
   }
   function showHome(screen) {
     if (screen) homeScreen = screen;
-    leaveMulti();
     leavePanel();
     savePos(true);
     unloadVideo();
@@ -2651,7 +2559,6 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
     releaseWake();
   }
   function openPanelEditor() {
-    leaveMulti();
     savePos(true); unloadVideo();
     currentMatchId = null; currentTagId = null;
     panelMode = true; padEdit = true; padSel = null;
@@ -2662,7 +2569,6 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
   }
   function openMatch(id) {
     if (!matches[id] || matches[id].deleted) return;
-    leaveMulti();
     leavePanel();
     unloadVideo();
     listSel = null; stopPlayback(); padEdit = false; padSel = null; tlEdit = null; catSel = null; tlFilter = { team: "all", hideEmpty: false };
@@ -2818,243 +2724,6 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
   });
 
   $("btn-back").addEventListener("click", function () { showHome("projects"); });
-
-  /* ============ Analyse sur plusieurs matchs ============ */
-  var mvId = null, mvCat = null, mvCur = null, mvEnd = null, mvStarOnly = false, mvPendingClip = null, mvEditing = null;
-  var mvUrls = {};   // vidéos chargées pendant la séance, par match
-  function analyses() {
-    return Object.keys(matches).map(function (k) { return matches[k]; })
-      .filter(function (a) { return a && !a.deleted && a.kind === "analysis"; })
-      .sort(function (a, b) { return (b.createdAt || 0) - (a.createdAt || 0); });
-  }
-  function mvDoc() { var a = mvId && matches[mvId]; return a && !a.deleted ? a : null; }
-  function mvMatches(a) { return (a.matchIds || []).map(function (id) { return matches[id]; }).filter(function (m) { return m && !m.deleted && Array.isArray(m.tags); }); }
-  function mvName(m) { return m.home + " – " + m.away; }
-  function renderMvHome() {
-    var list = $("mv-list"); list.textContent = "";
-    analyses().forEach(function (a) {
-      var li = el("li", "match-row"), info = el("div", "info");
-      info.appendChild(el("div", "teams", a.name));
-      var ms = mvMatches(a), n = 0; ms.forEach(function (m) { n += m.tags.length; });
-      info.appendChild(el("div", "meta", ms.length + (ms.length > 1 ? " matchs, " : " match, ") + n + (n > 1 ? " tags" : " tag")));
-      li.appendChild(info);
-      var acts = el("div", "row-actions");
-      var o = el("button", "btn small primary", "Ouvrir"); o.type = "button"; o.dataset.mopen = a.id;
-      var d = el("button", "btn small danger", "Supprimer"); d.type = "button"; d.dataset.mdel = a.id;
-      acts.appendChild(o); acts.appendChild(d); li.appendChild(acts); list.appendChild(li);
-    });
-  }
-  function openMvForm(a) {
-    mvEditing = a ? a.id : null;
-    var box = $("mv-checks"); box.textContent = "";
-    var ms = liveMatches();
-    ms.forEach(function (m) {
-      var lab = el("label"), cb = el("input"); cb.type = "checkbox"; cb.value = m.id;
-      cb.checked = !!(a && (a.matchIds || []).indexOf(m.id) >= 0);
-      lab.appendChild(cb);
-      var meta = [mvName(m)]; if (m.date) meta.push(m.date.split("-").reverse().join("/")); meta.push(m.tags.length + " tags");
-      lab.appendChild(el("span", "", meta.join(" · ")));
-      box.appendChild(lab);
-    });
-    if (!ms.length) box.appendChild(el("p", "empty", "Aucun match pour l'instant."));
-    $("mv-name").value = a ? a.name : "";
-    $("mv-new-err").textContent = "";
-    $("mv-new").hidden = false;
-    $("mv-new").querySelector("button[type=submit]").textContent = a ? "Enregistrer" : "Créer l'analyse";
-    if (a) { showHome("projects"); $("mv-new").hidden = false; }
-    $("mv-name").focus();
-  }
-  $("mv-new-btn").addEventListener("click", function () { openMvForm(null); });
-  $("mv-new-cancel").addEventListener("click", function () { $("mv-new").hidden = true; mvEditing = null; });
-  $("mv-new").addEventListener("submit", function (e) {
-    e.preventDefault();
-    var ids = [].slice.call($("mv-checks").querySelectorAll("input:checked")).map(function (c) { return c.value; });
-    var name = $("mv-name").value.trim();
-    if (!ids.length) { $("mv-new-err").textContent = "Coche au moins un match."; return; }
-    var a = mvEditing && matches[mvEditing];
-    if (a) { a.matchIds = ids; a.name = name || a.name; }
-    else { a = { id: uid("a"), kind: "analysis", name: name || "Analyse", matchIds: ids, stars: {}, createdAt: Date.now() }; matches[a.id] = a; }
-    touch(a);
-    $("mv-new").hidden = true; mvEditing = null;
-    openMulti(a.id);
-  });
-  $("mv-list").addEventListener("click", function (e) {
-    var b = e.target.closest("button"); if (!b) return;
-    if (b.dataset.mopen) openMulti(b.dataset.mopen);
-    else if (b.dataset.mdel) {
-      var a = matches[b.dataset.mdel]; if (!a) return;
-      snapshot(a);
-      matches[a.id] = { id: a.id, deleted: true, updatedAt: Date.now() };
-      saveLocal(); markDirty(a.id); renderHome();
-      showToast("Analyse supprimée. Les matchs, eux, sont conservés.", true);
-    }
-  });
-  function openMulti(id) {
-    if (!matches[id] || matches[id].deleted) return;
-    leavePanel(); savePos(true); unloadVideo();
-    currentMatchId = null; currentTagId = null;
-    mvId = id; mvCat = null; mvCur = null; mvEnd = null; mvStarOnly = false;
-    $("view-home").hidden = true; $("view-match").hidden = true; $("view-multi").hidden = false;
-    var v = $("mv-video"); v.pause(); v.removeAttribute("src"); v.load();
-    renderMulti(); window.scrollTo(0, 0); requestWake();
-  }
-  function leaveMulti() {
-    if ($("view-multi").hidden) return;
-    $("mv-video").pause(); $("view-multi").hidden = true; mvId = null;
-  }
-  $("mv-back").addEventListener("click", function () { leaveMulti(); showHome("projects"); });
-  $("mv-edit").addEventListener("click", function () { var a = mvDoc(); if (!a) return; leaveMulti(); openMvForm(a); });
-  /* Tous les clips de l'analyse, regroupés par nom de tag */
-  function mvGroups(a) {
-    var g = {}, order = [];
-    mvMatches(a).forEach(function (m) {
-      m.tags.forEach(function (t) {
-        var k = tagLabel(t);
-        if (!g[k]) { g[k] = { label: k, color: tagColor(t), clips: [] }; order.push(k); }
-        g[k].clips.push({ m: m, t: t, key: m.id + ":" + t.id });
-      });
-    });
-    var pos = {}; padButtons().forEach(function (b, i) { if (!(b.label in pos)) pos[b.label] = i; });
-    order.sort(function (x, y) { return (x in pos ? pos[x] : 999) - (y in pos ? pos[y] : 999) || x.localeCompare(y); });
-    return order.map(function (k) {
-      g[k].clips.sort(function (p, q) { return (a.matchIds.indexOf(p.m.id) - a.matchIds.indexOf(q.m.id)) || ((tlPos(p.m, p.t) || 0) - (tlPos(q.m, q.t) || 0)); });
-      return g[k];
-    });
-  }
-  function mvVisibleClips(a) {
-    var grp = mvGroups(a).filter(function (x) { return x.label === mvCat; })[0];
-    var clips = grp ? grp.clips : [];
-    if (mvStarOnly) clips = clips.filter(function (c) { return a.stars && a.stars[c.key]; });
-    return clips;
-  }
-  function renderMulti() {
-    var a = mvDoc(); if (!a) { leaveMulti(); showHome("projects"); return; }
-    var ms = mvMatches(a);
-    $("mv-head").textContent = a.name;
-    var loaded = ms.filter(function (m) { return mvUrls[m.id]; }).length, vidMs = ms.filter(isVideo).length;
-    $("mv-vids").textContent = ms.length + (ms.length > 1 ? " matchs" : " match") + " · vidéos chargées : " + loaded + " / " + vidMs;
-    $("mv-star-only").setAttribute("aria-pressed", String(mvStarOnly));
-    var list = $("mv-cats"); list.textContent = "";
-    var groups = mvGroups(a);
-    if (mvCat && !groups.some(function (x) { return x.label === mvCat; })) mvCat = null;
-    $("mv-cat-back").hidden = !mvCat;
-    $("mv-side-title").textContent = mvCat || "Par tag";
-    if (!mvCat) {
-      groups.forEach(function (g, i) {
-        var n = mvStarOnly ? g.clips.filter(function (c) { return a.stars && a.stars[c.key]; }).length : g.clips.length;
-        if (mvStarOnly && !n) return;
-        var li = el("li"), b = el("button"); b.type = "button"; b.dataset.mcat = g.label;
-        b.appendChild(el("span", "nn", String(i + 1)));
-        var sw = el("span", "sw"); sw.style.background = g.color; b.appendChild(sw);
-        b.appendChild(el("span", "nm", g.label));
-        b.appendChild(el("span", "ct", n + (n > 1 ? " clips" : " clip")));
-        li.appendChild(b); list.appendChild(li);
-      });
-      if (!list.children.length) list.appendChild(el("li", "cat-none", mvStarOnly ? "Aucun clip gardé pour l'instant. Touche ☆ sur un clip pour le garder." : "Aucun tag dans ces matchs."));
-    } else {
-      var lastM = null;
-      mvVisibleClips(a).forEach(function (c) {
-        if (c.m !== lastM) { lastM = c.m; list.appendChild(el("li", "mv-grp", mvName(c.m))); }
-        var li = el("li", "mv-clip" + (mvCur && mvCur.key === c.key ? " on" : ""));
-        var b = el("button"); b.type = "button"; b.dataset.mclip = c.key;
-        var x = tlPos(c.m, c.t);
-        b.appendChild(el("span", "tm", x != null ? fmt(x) : "--:--"));
-        var nm = el("span", "nm", c.t.note || c.t.res || "");
-        if (!isVideo(c.m)) nm.appendChild(el("span", "novid", " · sans vidéo"));
-        b.appendChild(nm);
-        var st = el("button", "st", a.stars && a.stars[c.key] ? "★" : "☆"); st.type = "button"; st.dataset.mstar = c.key;
-        st.setAttribute("aria-pressed", String(!!(a.stars && a.stars[c.key]))); st.setAttribute("aria-label", "Garder ce clip");
-        li.appendChild(b); li.appendChild(st); list.appendChild(li);
-      });
-      if (!list.children.length) list.appendChild(el("li", "cat-none", "Aucun clip gardé dans ce tag."));
-    }
-    renderMvBar();
-  }
-  function renderMvBar() {
-    var a = mvDoc(), v = $("mv-video");
-    $("mv-play").innerHTML = v.paused ? '<svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor" aria-hidden="true"><path d="M7 4v16l13-8z"/></svg>' : '<svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor" aria-hidden="true"><path d="M6 4h4v16H6zM14 4h4v16h-4z"/></svg>';
-    if (!mvCur || !a) { $("mv-now").textContent = ""; $("mv-star").hidden = true; return; }
-    var x = tlPos(mvCur.m, mvCur.t);
-    $("mv-now").textContent = tagLabel(mvCur.t) + " · " + mvName(mvCur.m) + " · " + (x != null ? fmt(x) : "");
-    var on = !!(a.stars && a.stars[mvCur.key]);
-    $("mv-star").hidden = false; $("mv-star").textContent = on ? "★ Gardé" : "☆ Garder"; $("mv-star").setAttribute("aria-pressed", String(on));
-  }
-  function mvFind(key) { var a = mvDoc(); if (!a) return null; var all = []; mvGroups(a).forEach(function (g) { all = all.concat(g.clips); }); return all.filter(function (c) { return c.key === key; })[0] || null; }
-  function mvShowEmpty(text, withBtn) {
-    $("mv-empty").hidden = false; $("mv-empty-text").textContent = text; $("mv-empty-btn").hidden = !withBtn;
-  }
-  function mvPlay(c) {
-    mvCur = c; mvEnd = null;
-    var v = $("mv-video");
-    if (!isVideo(c.m)) { v.pause(); mvShowEmpty("Ce match a été tagué sans vidéo.", false); renderMulti(); return; }
-    var url = mvUrls[c.m.id];
-    if (!url) {
-      v.pause(); mvPendingClip = c;
-      mvShowEmpty("Choisis la vidéo de " + mvName(c.m) + (c.m.video && c.m.video.name ? " (" + c.m.video.name + ")" : "") + ", ou charge toutes les vidéos d'un coup en haut.", true);
-      renderMulti(); return;
-    }
-    $("mv-empty").hidden = true;
-    var start = Math.max(0, tlPos(c.m, c.t) - pre(c.t)), end = tlPos(c.m, c.t) + post(c.t);
-    var go = function () { try { v.currentTime = start; } catch (err) {} mvEnd = end; var pr = v.play(); if (pr && pr.catch) pr.catch(function () {}); };
-    if (v.dataset.match !== c.m.id) { v.dataset.match = c.m.id; v.src = url; v.addEventListener("loadedmetadata", go, { once: true }); v.load(); }
-    else go();
-    renderMulti();
-  }
-  function mvStep(d) {
-    var a = mvDoc(); if (!a || !mvCat) return;
-    var clips = mvVisibleClips(a); if (!clips.length) return;
-    var i = mvCur ? clips.map(function (c) { return c.key; }).indexOf(mvCur.key) : -1;
-    var j = Math.min(clips.length - 1, Math.max(0, i + d)); if (i < 0) j = 0;
-    mvPlay(clips[j]);
-  }
-  $("mv-video").addEventListener("timeupdate", function () { var v = $("mv-video"); if (mvEnd != null && v.currentTime >= mvEnd) { v.pause(); mvEnd = null; } });
-  $("mv-video").addEventListener("play", renderMvBar);
-  $("mv-video").addEventListener("pause", renderMvBar);
-  $("mv-video").addEventListener("click", function () { var v = $("mv-video"); if (!v.src) return; if (v.paused) { var pr = v.play(); if (pr && pr.catch) pr.catch(function () {}); } else v.pause(); });
-  $("mv-play").addEventListener("click", function () {
-    var v = $("mv-video");
-    if (!v.getAttribute("src")) { mvStep(0); return; }
-    if (v.paused) { if (mvCur && v.currentTime >= tlPos(mvCur.m, mvCur.t) + post(mvCur.t) - 0.2) { mvPlay(mvCur); return; } var pr = v.play(); if (pr && pr.catch) pr.catch(function () {}); } else v.pause();
-  });
-  $("mv-prev").addEventListener("click", function () { mvStep(-1); });
-  $("mv-next").addEventListener("click", function () { mvStep(1); });
-  function mvToggleStar(key) {
-    var a = mvDoc(); if (!a) return;
-    a.stars = a.stars || {};
-    if (a.stars[key]) delete a.stars[key]; else a.stars[key] = true;
-    touch(a); renderMulti();
-  }
-  $("mv-star").addEventListener("click", function () { if (mvCur) mvToggleStar(mvCur.key); });
-  $("mv-star-only").addEventListener("click", function () { mvStarOnly = !mvStarOnly; renderMulti(); });
-  $("mv-cat-back").addEventListener("click", function () { mvCat = null; renderMulti(); });
-  $("mv-cats").addEventListener("click", function (e) {
-    var b = e.target.closest("button"); if (!b) return;
-    if (b.dataset.mcat) { mvCat = b.dataset.mcat; renderMulti(); $("mv-cats").scrollTop = 0; }
-    else if (b.dataset.mstar) mvToggleStar(b.dataset.mstar);
-    else if (b.dataset.mclip) { var c = mvFind(b.dataset.mclip); if (c) mvPlay(c); }
-  });
-  function mvAttach(m, file) { if (mvUrls[m.id]) { try { URL.revokeObjectURL(mvUrls[m.id]); } catch (e) {} } mvUrls[m.id] = URL.createObjectURL(file); }
-  $("mv-load").addEventListener("click", function () { $("mv-files").value = ""; $("mv-files").click(); });
-  $("mv-files").addEventListener("change", function () {
-    var a = mvDoc(); if (!a) return;
-    var files = [].slice.call($("mv-files").files || []), ms = mvMatches(a).filter(isVideo), hit = 0, miss = [];
-    files.forEach(function (f) {
-      var m = ms.filter(function (x) { return x.video && x.video.name === f.name; })[0];
-      if (m) { mvAttach(m, f); hit++; } else miss.push(f.name);
-    });
-    var left = ms.filter(function (m) { return !mvUrls[m.id]; });
-    /* Fichiers au nom inconnu : on les donne dans l'ordre aux matchs encore sans vidéo, seulement s'il y en a autant. */
-    if (miss.length && miss.length === left.length) { files.filter(function (f) { return miss.indexOf(f.name) >= 0; }).forEach(function (f, i) { mvAttach(left[i], f); hit++; }); miss = []; }
-    showToast(hit + (hit > 1 ? " vidéos reconnues." : " vidéo reconnue.") + (miss.length ? " Non reconnue" + (miss.length > 1 ? "s" : "") + " : " + miss.join(", ") : ""), false);
-    if (mvPendingClip && mvUrls[mvPendingClip.m.id]) { var c = mvPendingClip; mvPendingClip = null; mvPlay(c); } else renderMulti();
-  });
-  $("mv-empty-btn").addEventListener("click", function () { $("mv-one").value = ""; $("mv-one").click(); });
-  $("mv-one").addEventListener("change", function () {
-    var f = $("mv-one").files && $("mv-one").files[0]; if (!f || !mvPendingClip) return;
-    var c = mvPendingClip; mvPendingClip = null; mvAttach(c.m, f);
-    if (c.m.video && !c.m.video.name) { c.m.video.name = f.name; touch(c.m); }
-    mvPlay(c);
-  });
   $("go-new").addEventListener("click", function () { showHome("new"); });
   $("go-projects").addEventListener("click", function () { showHome("projects"); });
   $("go-panel").addEventListener("click", openPanelEditor);
