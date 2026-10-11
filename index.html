@@ -1049,6 +1049,10 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
 }
 .vsnap { position: absolute; z-index: 4; pointer-events: none; transition: opacity .18s ease; opacity: 1; }
 .vsnap.out { opacity: 0; }
+/* Pas de sélection de texte ni de menu « Copier » quand on reste appuyé (sauf dans les champs à remplir) */
+html, body, button, video, canvas, img { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+input, textarea, select, [contenteditable="true"] { -webkit-user-select: text; user-select: text; -webkit-touch-callout: default; }
+* { -webkit-tap-highlight-color: transparent; }
 </style>
 </head>
 <body>
