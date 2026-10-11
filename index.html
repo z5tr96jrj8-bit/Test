@@ -894,6 +894,8 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
 .bw-seg { grid-template-columns: repeat(6, minmax(0, 1fr)); }
 .bw-seg button { min-height: 40px; }
 #video { cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.vs-badge { position: absolute; left: 10px; top: 10px; z-index: 6; padding: 6px 10px; border-radius: 4px; background: rgba(0,0,0,.72); color: #F1F2F3; font-size: 13px; font-variant-numeric: tabular-nums; pointer-events: none; }
+.vs-meta { color: #3FB27F; }
 </style>
 </head>
 <body>
@@ -921,6 +923,7 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
       <div class="store-bar" id="store-bar">
         <span class="store-text" id="store-text"></span>
         <span class="store-track" role="progressbar" aria-label="Stockage utilisé sur cet appareil" aria-valuemin="0" aria-valuemax="100" id="store-track"><span class="store-fill" id="store-fill"></span></span>
+        <span class="store-text" id="vs-text" hidden></span>
       </div>
     </div>
     <span id="sync-home" hidden></span><span id="tile-projects" hidden></span>
@@ -1000,9 +1003,10 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
       <div class="video-ask" id="video-ask" hidden>
         <p id="video-ask-text"></p>
         <button class="btn primary" id="video-ask-btn" type="button">Choisir la vidéo</button>
-        <p class="video-ask-note">Le navigateur ne garde pas la vidéo d'une fois sur l'autre. Tes tags, eux, sont conservés.</p>
+        <p class="video-ask-note" id="video-ask-note">Le navigateur ne garde pas la vidéo d'une fois sur l'autre. Tes tags, eux, sont conservés.</p>
       </div>
       <p class="video-msg" id="video-msg" hidden role="alert"></p>
+      <span class="vs-badge" id="vs-badge" hidden></span>
     </div>
     <div class="clockbar" id="clockbar">
       <div class="clock-controls" id="clock-controls"></div>
@@ -1666,13 +1670,77 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
     if (videoUrl) { try { URL.revokeObjectURL(videoUrl); } catch (e) {} videoUrl = null; }
     $("video-msg").hidden = true;
   }
-  function loadVideoFile(file) {
+  /* ============ Vidéos gardées sur l'appareil (stockage privé du site) ============ */
+  var VS_KEY = "carnet-de-tags.videos";
+  var vsMeta = {};   // id du match -> { name, size }
+  try { vsMeta = JSON.parse(localStorage.getItem(VS_KEY) || "{}") || {}; } catch (e) { vsMeta = {}; }
+  function vsSaveMeta() { try { localStorage.setItem(VS_KEY, JSON.stringify(vsMeta)); } catch (e) {} }
+  var vsOk = !!(navigator.storage && navigator.storage.getDirectory && window.Worker && window.Blob);
+  var vsJob = null;     // { id, p } enregistrement en cours
+  var vsLoading = null; // id du match dont on relit la vidéo
+  function vsDir() { return navigator.storage.getDirectory().then(function (r) { return r.getDirectoryHandle("videos", { create: true }); }); }
+  function vsGet(id) {
+    var meta = vsMeta[id]; if (!vsOk || !meta) return Promise.resolve(null);
+    return vsDir().then(function (d) { return d.getFileHandle(id); }).then(function (h) { return h.getFile(); })
+      .then(function (f) { return f && f.size === meta.size ? f : null; }, function () { return null; });
+  }
+  function vsRemove(id) {
+    if (!vsMeta[id]) return Promise.resolve();
+    delete vsMeta[id]; vsSaveMeta();
+    if (!vsOk) return Promise.resolve();
+    return vsDir().then(function (d) { return d.removeEntry(id); }).catch(function () {});
+  }
+  var VS_WORKER = "onmessage=async function(e){var id=e.data.id,file=e.data.file;try{var r=await navigator.storage.getDirectory();var d=await r.getDirectoryHandle('videos',{create:true});var fh=await d.getFileHandle(id,{create:true});var h=await fh.createSyncAccessHandle();h.truncate(0);var CH=8388608,off=0,last=0;while(off<file.size){var b=new Uint8Array(await file.slice(off,off+CH).arrayBuffer());var n=h.write(b,{at:off});if(n!==b.byteLength)throw new Error('write');off+=b.byteLength;if(off-last>=33554432||off>=file.size){last=off;postMessage({p:off/file.size});}}h.flush();h.close();postMessage({done:true});}catch(err){try{var r2=await navigator.storage.getDirectory();var d2=await r2.getDirectoryHandle('videos',{create:true});await d2.removeEntry(id);}catch(x){}postMessage({error:String(err&&err.name||err)});}};";
+  function vsSave(m, file) {
+    if (!vsOk || vsJob || !file) return;
+    var id = m.id;
+    var go = function () {
+      var w;
+      try { w = new Worker(URL.createObjectURL(new Blob([VS_WORKER], { type: "text/javascript" }))); } catch (e) { vsOk = false; return; }
+      vsJob = { id: id, p: 0 }; renderVsBadge();
+      w.onmessage = function (e) {
+        var d = e.data || {};
+        if (d.p != null) { vsJob.p = d.p; renderVsBadge(); return; }
+        w.terminate(); vsJob = null;
+        if (d.done) { vsMeta[id] = { name: file.name, size: file.size }; vsSaveMeta(); showToast("Vidéo gardée sur cet appareil : tu n'auras plus à la rechoisir.", false); }
+        else if (/Security|NotAllowed|InvalidState|TypeError/i.test(d.error || "")) vsOk = false;
+        else showToast(/Quota/i.test(d.error || "") ? "Plus assez de place pour garder cette vidéo sur l'appareil. Elle reste lisible pour cette séance." : "La vidéo n'a pas pu être gardée sur l'appareil. Elle reste lisible pour cette séance.", false);
+        renderVsBadge(); if (!$("view-home").hidden) renderHome();
+      };
+      w.onerror = function () { try { w.terminate(); } catch (e) {} vsJob = null; vsOk = false; renderVsBadge(); };
+      w.postMessage({ id: id, file: file });
+    };
+    try { if (navigator.storage.persist) navigator.storage.persist().catch(function () {}); } catch (e) {}
+    if (navigator.storage.estimate) navigator.storage.estimate().then(function (est) {
+      if (est && est.quota && est.quota - (est.usage || 0) < file.size + 50 * 1024 * 1024) showToast("Plus assez de place pour garder cette vidéo sur l'appareil. Libère la vidéo d'un ancien match dans Mes projets.", false);
+      else go();
+    }, go); else go();
+  }
+  function renderVsBadge() {
+    var b = $("vs-badge"); if (!b) return;
+    var m = cur();
+    if (vsJob && m && vsJob.id === m.id) { b.hidden = false; b.textContent = "Enregistrement de la vidéo sur l'appareil… " + Math.round(vsJob.p * 100) + " %"; }
+    else b.hidden = true;
+  }
+  function vsTryLoad(m) {
+    if (!vsOk || !isVideo(m) || videoReady || !vsMeta[m.id]) return;
+    vsLoading = m.id; renderMatch();
+    vsGet(m.id).then(function (f) {
+      var still = cur() && cur().id === m.id && !videoReady;
+      vsLoading = null;
+      if (!f) { if (vsMeta[m.id]) { delete vsMeta[m.id]; vsSaveMeta(); } if (still) renderMatch(); return; }
+      if (still) loadVideoFile(f, true); 
+    });
+  }
+  function vsTotal() { var n = 0; Object.keys(vsMeta).forEach(function (k) { n += vsMeta[k].size || 0; }); return n; }
+  function loadVideoFile(file, fromStore) {
     var m = cur(); if (!m || !file) return;
     unloadVideo();
     if (!isVideo(m)) { m.mode = "video"; }
     if (!m.video) m.video = { name: "", pos: 0, k1: null, k2: null };
     if (m.video.name && m.video.name !== file.name) m.video.pos = 0;
     m.video.name = file.name;
+    if (!fromStore) { var sm = vsMeta[m.id]; if (!sm || sm.size !== file.size || sm.name !== file.name) { if (sm) vsRemove(m.id); vsSave(m, file); } }
     try {
       videoUrl = URL.createObjectURL(file);
       vid.src = videoUrl;
@@ -1922,6 +1990,7 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
   /* Place prise par les matchs et le pupitre dans le stockage du navigateur (limite d'environ 5 Mo). */
   var STORE_LIMIT = 5 * 1024 * 1024;
   function fmtSize(n) {
+    if (n >= 1024 * 1024 * 1024) return (n / 1024 / 1024 / 1024).toFixed(1).replace(".", ",") + " Go";
     if (n >= 1024 * 1024) return (n / 1024 / 1024).toFixed(1).replace(".", ",") + " Mo";
     return (n > 0 ? Math.max(1, Math.round(n / 1024)) : 0) + " Ko";
   }
@@ -1948,6 +2017,12 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
   }
   function renderHome() {
     renderStore();
+    var vn = Object.keys(vsMeta).length;
+    $("vs-text").hidden = !vn;
+    if (vn) {
+      $("vs-text").textContent = "Vidéos gardées sur cet appareil : " + vn + " · " + fmtSize(vsTotal());
+      if (navigator.storage && navigator.storage.estimate) navigator.storage.estimate().then(function (est) { if (est && est.quota) $("vs-text").textContent = "Vidéos gardées sur cet appareil : " + vn + " · " + fmtSize(vsTotal()) + " (place disponible ≈ " + fmtSize(Math.max(0, est.quota - (est.usage || 0))) + ")"; }, function () {});
+    }
     var list = $("match-list");
     list.textContent = "";
     var ms = liveMatches();
@@ -1968,6 +2043,10 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
       var open = el("button", "btn small primary", "Ouvrir"); open.type = "button"; open.dataset.open = m.id;
       var exp = el("button", "btn small", "Exporter"); exp.type = "button"; exp.dataset.export = m.id;
       var del = el("button", "btn small danger", "Supprimer"); del.type = "button"; del.dataset.del = m.id;
+      if (vsMeta[m.id]) {
+        info.appendChild(el("div", "meta vs-meta", "Vidéo gardée sur cet appareil · " + fmtSize(vsMeta[m.id].size)));
+        var fr = el("button", "btn small", "Libérer la vidéo"); fr.type = "button"; fr.dataset.vfree = m.id; acts.appendChild(fr);
+      }
       acts.appendChild(open); acts.appendChild(exp); acts.appendChild(del);
       li.appendChild(acts);
       list.appendChild(li);
@@ -2526,7 +2605,11 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
     $("board").dataset.mode = isVideo(m) ? "video" : "live";
     $("videobox").hidden = !isVideo(m);
     $("video-ask").hidden = !isVideo(m) || videoReady;
-    $("video-ask-text").textContent = m.video && m.video.name ? "Rechoisis la vidéo de ce match : " + m.video.name : "Choisis la vidéo de ce match.";
+    var loadingStored = vsLoading === m.id;
+    $("video-ask-text").textContent = loadingStored ? "Ouverture de la vidéo enregistrée sur l'appareil…" : (m.video && m.video.name ? "Rechoisis la vidéo de ce match : " + m.video.name : "Choisis la vidéo de ce match.");
+    $("video-ask-btn").hidden = loadingStored;
+    $("video-ask-note").textContent = vsOk ? "Une fois choisie, la vidéo est gardée sur cet appareil : tu n'auras plus à la rechoisir. Tes tags, eux, sont toujours conservés." : "Le navigateur ne garde pas la vidéo d'une fois sur l'autre. Tes tags, eux, sont conservés.";
+    renderVsBadge();
     vid.hidden = !videoReady;
     renderClockBar(m);
     renderEvents(m);
@@ -2575,6 +2658,7 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
     currentMatchId = id; currentTagId = null; activeTeam = "home";
     $("view-home").hidden = true; $("view-match").hidden = false;
     renderMatch();
+    vsTryLoad(matches[id]);
     window.scrollTo(0, 0);
     requestWake();
   }
@@ -2713,11 +2797,12 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
     var b = e.target.closest("button"); if (!b) return;
     if (b.dataset.open) openMatch(b.dataset.open);
     else if (b.dataset.export) openExport(b.dataset.export);
+    else if (b.dataset.vfree) { vsRemove(b.dataset.vfree).then(function () { renderHome(); showToast("Vidéo retirée de l'appareil. Les tags sont conservés.", false); }); }
     else if (b.dataset.del) {
       var m = matches[b.dataset.del]; if (!m) return;
       snapshot(m);
       matches[m.id] = { id: m.id, deleted: true, updatedAt: Date.now() };
-      saveLocal(); markDirty(m.id);
+      saveLocal(); markDirty(m.id); vsRemove(m.id);
       renderHome();
       showToast("Match supprimé.", true);
     }
