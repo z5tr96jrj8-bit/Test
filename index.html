@@ -915,7 +915,14 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
 #view-match .topbar:has(#ptabs:not([hidden])) { grid-template-columns: auto auto minmax(0, 1fr) auto; }
 #view-match .topbar:has(#ptabs:not([hidden])) .score { justify-content: flex-start; text-align: left; }
 @media (max-width: 760px) { #view-match .topbar:has(#ptabs:not([hidden])) { grid-template-columns: auto minmax(0, 1fr) auto; } #view-match .topbar:has(#ptabs:not([hidden])) .ptabs { grid-column: 1 / -1; grid-row: 2; margin: 0; } }
-#view-sort .topbar { margin-bottom: 8px; }
+#view-sort { max-width: none; padding: 4px 8px 12px; }
+#view-sort .topbar { margin-bottom: 4px; gap: 4px 10px; }
+#view-sort .topbar .btn.icon-btn { width: 36px; height: 32px; min-height: 32px; }
+#view-sort .topbar .btn.icon-btn svg { width: 18px; height: 18px; }
+#view-sort .score { font-size: 13px; gap: 6px; justify-content: flex-start; text-align: left; }
+#view-sort .top-actions { gap: 6px; }
+#view-sort .top-actions .btn.small { min-height: 30px; padding: 3px 10px; font-size: 13px; }
+#sv-export:disabled { opacity: .45; }
 .sv-board { display: grid; gap: 8px; grid-template-columns: minmax(0, 1fr); }
 @media (min-width: 900px) { .sv-board { grid-template-columns: 340px minmax(0, 1fr); align-items: start; } .sv-main { position: sticky; top: 8px; } }
 .sv-main { order: -1; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
@@ -1122,7 +1129,7 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
   <div class="topbar sv-top">
     <button class="btn icon-btn" id="sv-back" type="button" aria-label="Retour au match" title="Retour au match"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"/></svg></button>
     <div class="score" id="sv-head"></div>
-    <div class="top-actions"></div>
+    <div class="top-actions"><button class="btn small accent" id="sv-export" type="button" disabled>Exporter le montage</button></div>
   </div>
   <div class="sv-board">
     <section class="panel sv-side">
@@ -3184,6 +3191,7 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
   }
   function leaveSort() {
     if ($("view-sort").hidden) return;
+    if (svRec) svRecCancel("");
     var v = $("sv-video"); v.pause(); v.removeAttribute("src"); delete v.dataset.match; v.load();
     Object.keys(svUrls).forEach(function (k) { try { URL.revokeObjectURL(svUrls[k]); } catch (e) {} }); svUrls = {};
     $("view-sort").hidden = true;
@@ -3246,8 +3254,17 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
   }
   var PLAY_SVG = '<svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor" aria-hidden="true"><path d="M7 4v16l13-8z"/></svg>';
   var PAUSE_SVG = '<svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor" aria-hidden="true"><path d="M6 4h4v16H6zM14 4h4v16h-4z"/></svg>';
+  function renderSvExport(a) {
+    var b = $("sv-export"); if (!b) return;
+    var clips = a && sv.cat ? svVisible(a) : [];
+    var dur = 0; clips.forEach(function (c) { dur += pre(c.t) + post(c.t); });
+    b.disabled = !clips.length || !!svRec;
+    b.textContent = clips.length ? "Exporter le montage (" + clips.length + (clips.length > 1 ? " clips · " : " clip · ") + fmt(dur) + ")" : "Exporter le montage";
+    b.title = sv.cat ? "" : "Ouvre un tag pour exporter ses clips";
+  }
   function renderSvBar() {
     var a = pjDoc(), v = $("sv-video");
+    renderSvExport(a);
     $("sv-play").innerHTML = v.paused ? PLAY_SVG : PAUSE_SVG;
     var now = $("sv-now"); now.textContent = "";
     if (!sv.cur || !a) {
@@ -3293,6 +3310,101 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
     sv.cur = null; sv.end = null; sv.mid = m.id;
     svOpen(m, function () { var v = $("sv-video"); v.pause(); try { v.currentTime = (m.video && m.video.pos) || 0; } catch (err) {} });
   }
+  /* ---- Export du montage : les clips affichés, à la suite, dans un seul fichier ---- */
+  var svRec = null;
+  function svExport() {
+    var a = pjDoc(); if (!a || !sv.cat || svRec) return;
+    var clips = svVisible(a); if (!clips.length) return;
+    if (!window.MediaRecorder || !HTMLCanvasElement.prototype.captureStream || !downloads) { recUnavailable(); return; }
+    var mids = []; clips.forEach(function (c) { if (mids.indexOf(c.m.id) < 0) mids.push(c.m.id); });
+    Promise.all(mids.map(function (id) { return svUrl(matches[id]); })).then(function (urls) {
+      var missing = mids.filter(function (id, i) { return !urls[i]; });
+      if (missing.length) { showToast("Il manque la vidéo de : " + missing.map(function (id) { return matches[id].home + " – " + matches[id].away; }).join(", ") + ". Ouvre un de ses clips pour la choisir.", false); return; }
+      svRecStart(a, clips);
+    });
+  }
+  function svRecStart(a, clips) {
+    var v = $("sv-video"); v.pause(); sv.end = null;
+    var W = 1280, H = 720;
+    var canvas = document.createElement("canvas"); canvas.width = W; canvas.height = H;
+    var ctx = canvas.getContext("2d"); ctx.fillStyle = "#000"; ctx.fillRect(0, 0, W, H);
+    var mime = pickMime(), rec;
+    try { rec = new MediaRecorder(canvas.captureStream(30), mime ? { mimeType: mime, videoBitsPerSecond: 5000000 } : undefined); }
+    catch (e) { recUnavailable(); return; }
+    var chunks = [], name = (a.name + " - " + sv.cat).replace(/[\\/:*?"<>|]+/g, "-").slice(0, 80);
+    var st = svRec = { clips: clips, i: 0, rec: rec, ctx: ctx, cancelled: false, raf: 0, lastT: -1, lastMove: Date.now(), muted: v.muted };
+    rec.ondataavailable = function (e) { if (e.data && e.data.size) chunks.push(e.data); };
+    rec.onstop = function () {
+      v.pause(); v.muted = st.muted; svRec = null; renderSvExport(pjDoc());
+      if (st.cancelled) { if (!st.msg) $("rec-overlay").hidden = true; return; }
+      if (!chunks.length) { $("rec-msg").textContent = "L'enregistrement n'a rien produit. Réessaie."; $("rec-cancel").textContent = "Fermer"; return; }
+      var type = rec.mimeType || mime || "video/webm", ext = /mp4/.test(type) ? "mp4" : "webm";
+      var blob = new Blob(chunks, { type: type });
+      $("rec-msg").textContent = "Montage prêt. Confirme l'enregistrement du fichier.";
+      $("rec-cancel").textContent = "Fermer";
+      downloads.save({ filename: name + "." + ext, data: blob }).then(function () {
+        $("rec-overlay").hidden = true; showToast("Montage enregistré : " + name + "." + ext, false);
+      }, function (err) {
+        var code = err && err.code;
+        $("rec-msg").textContent = code === "declined" ? "Enregistrement annulé." : (code === "too_large" ? "Le fichier est trop lourd. Exporte moins de clips à la fois." : "Le fichier n'a pas pu être enregistré ici.");
+      });
+    };
+    v.muted = true;
+    $("rec-cancel").textContent = "Annuler"; $("rec-overlay").hidden = false;
+    try { rec.start(1000); rec.pause(); } catch (e) { svRec = null; $("rec-overlay").hidden = true; recUnavailable(); return; }
+    renderSvExport(a);
+    svRecNext(st);
+  }
+  function svDraw(st) {
+    var v = $("sv-video"), vw = v.videoWidth || 16, vh = v.videoHeight || 9, k = Math.min(1280 / vw, 720 / vh), dw = vw * k, dh = vh * k;
+    st.ctx.fillStyle = "#000"; st.ctx.fillRect(0, 0, 1280, 720);
+    try { st.ctx.drawImage(v, (1280 - dw) / 2, (720 - dh) / 2, dw, dh); } catch (e) {}
+  }
+  function svRecNext(st) {
+    if (svRec !== st || st.cancelled) return;
+    if (st.i >= st.clips.length) { try { st.rec.stop(); } catch (e) {} return; }
+    var c = st.clips[st.i], v = $("sv-video");
+    sv.cur = c; sv.mid = c.m.id; renderSort();
+    $("rec-msg").textContent = "Montage : clip " + (st.i + 1) + " sur " + st.clips.length + ", enregistré en temps réel. Garde cette page ouverte et l'écran allumé.";
+    var start = Math.max(0, tlPos(c.m, c.t) - pre(c.t)), end = tlPos(c.m, c.t) + post(c.t);
+    var started = false;
+    var go = function () {
+      if (started || svRec !== st || st.cancelled) return;
+      started = true; v.removeEventListener("seeked", go);
+      var stop = isFinite(v.duration) ? Math.min(end, v.duration - 0.05) : end;
+      svDraw(st);
+      try { st.rec.resume(); } catch (e) {}
+      var pr = v.play(); if (pr && pr.catch) pr.catch(function () {});
+      st.lastT = -1; st.lastMove = Date.now();
+      var frame = function () {
+        if (svRec !== st || st.cancelled) return;
+        svDraw(st);
+        var t = v.currentTime;
+        if (t !== st.lastT) { st.lastT = t; st.lastMove = Date.now(); }
+        if (t >= stop || v.ended) { v.pause(); try { st.rec.pause(); } catch (e) {} st.i++; svRecNext(st); return; }
+        if (Date.now() - st.lastMove > 8000) { svRecCancel("La lecture s'est arrêtée pendant l'enregistrement. Réessaie en gardant la page au premier plan."); return; }
+        st.raf = requestAnimationFrame(frame);
+      };
+      st.raf = requestAnimationFrame(frame);
+    };
+    var seek = function () { v.addEventListener("seeked", go); try { v.currentTime = start; } catch (e) {} setTimeout(go, 2500); };
+    svUrl(c.m).then(function (url) {
+      if (svRec !== st || st.cancelled) return;
+      if (!url) { svRecCancel("La vidéo de " + c.m.home + " – " + c.m.away + " n'est plus disponible."); return; }
+      $("sv-empty").hidden = true;
+      if (v.dataset.match !== c.m.id) { v.dataset.match = c.m.id; v.src = url; v.addEventListener("loadedmetadata", seek, { once: true }); v.load(); }
+      else seek();
+    });
+  }
+  function svRecCancel(msg) {
+    var st = svRec; if (!st) return;
+    st.cancelled = true; st.msg = msg || ""; cancelAnimationFrame(st.raf);
+    if (msg) { $("rec-msg").textContent = msg; $("rec-cancel").textContent = "Fermer"; try { st.rec.stop(); } catch (e) {} $("rec-overlay").hidden = false; return; }
+    try { st.rec.stop(); } catch (e) { svRec = null; }
+    $("rec-overlay").hidden = true;
+  }
+  $("sv-export").addEventListener("click", svExport);
+  $("rec-cancel").addEventListener("click", function () { if (svRec) svRecCancel(""); });
   function svStep(d) {
     var a = pjDoc(); if (!a || !sv.cat) return;
     var clips = svVisible(a); if (!clips.length) return;
