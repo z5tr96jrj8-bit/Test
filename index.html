@@ -1029,6 +1029,21 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
 .nm2 .actions { margin-top: 20px; display: grid; gap: 8px; }
 .nm-cta { width: 100%; min-height: 52px; font-size: 16px; font-weight: 700; }
 @media (max-width: 560px) { .nm-vs { grid-template-columns: minmax(0, 1fr); } .nm-x { display: none; } .nm-two { grid-template-columns: minmax(0, 1fr); } }
+/* Bouton Début → Fin en cours d'enregistrement */
+.event-grid button.pb.rec { box-shadow: inset 0 0 0 3px #E5484D; }
+.event-grid button.pb.rec::before { content: "● REC"; position: absolute; top: 3px; left: 6px; font-size: 10px; font-weight: 700; color: #fff; background: #E5484D; padding: 1px 5px; border-radius: 3px; animation: recblink 1.2s infinite; }
+.event-grid button.pb { position: relative; }
+@keyframes recblink { 50% { opacity: .35; } }
+.pp-note { margin: -4px 0 4px; font-size: 13px; color: var(--muted); }
+.pad-props-empty { margin: 0; padding: 14px; font-size: 14px; color: var(--muted); border: 1px dashed var(--line); border-radius: 6px; }
+/* Modifier le panel : réglages à droite du panel */
+@media (min-width: 900px) {
+  .panel-host { max-width: 1180px; }
+  #panel-host > .events { display: grid; grid-template-columns: minmax(0, 1fr) 400px; column-gap: 20px; align-items: start; }
+  #panel-host > .events > * { grid-column: 1; }
+  #panel-host > .events > .pad-props, #panel-host > .events > .pad-props-empty { grid-column: 2; grid-row: 1 / span 8; position: sticky; top: 12px; align-self: start; max-height: calc(100vh - 24px); overflow-y: auto; }
+  #panel-host .pad-props .pp-row { grid-template-columns: 96px minmax(0, 1fr); }
+}
 </style>
 </head>
 <body>
@@ -1222,6 +1237,7 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
         <button class="btn small" id="pad-add-label" type="button">Ajouter un titre</button>
         <button class="btn small quiet" id="pad-reset" type="button">Disposition d'origine</button>
       </div>
+      <p class="pad-props-empty" id="pad-props-empty" hidden>Touche un bouton du panel pour modifier son texte, sa couleur, son bord ou sa façon d'enregistrer.</p>
       <div class="pad-props" id="pad-props" hidden>
         <div class="pp-row"><label for="pp-label">Texte</label><input id="pp-label" maxlength="30"></div>
         <div class="pp-row" id="pp-team-row"><span>Équipe</span><div class="pp-seg" id="pp-team"><button type="button" data-team="home"></button><button type="button" data-team="away"></button></div></div>
@@ -1229,6 +1245,8 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
         <div class="pp-row" id="pp-pat-row"><span>Motif</span><div class="swatches pats" id="pp-pat"></div></div>
         <div class="pp-row" id="pp-bd-row"><span>Bord</span><div class="swatches" id="pp-bd"></div></div>
         <div class="pp-row" id="pp-bw-row"><span>Épaisseur</span><div class="pp-seg bw-seg" id="pp-bw"><button type="button" data-bw="1">1</button><button type="button" data-bw="2">2</button><button type="button" data-bw="3">3</button><button type="button" data-bw="4">4</button><button type="button" data-bw="6">6</button><button type="button" data-bw="8">8</button></div></div>
+        <div class="pp-row" id="pp-dur-row"><span>Enregistrement</span><div class="pp-seg" id="pp-dur"><button type="button" data-dur="">Clip fixe</button><button type="button" data-dur="toggle">Début → Fin</button></div></div>
+        <p class="pp-note" id="pp-dur-note" hidden>1er toucher : début du clip. 2e toucher : fin du clip.</p>
         <div class="pp-row" id="pp-res-row"><label for="pp-res">Résultats</label><input id="pp-res" maxlength="90" placeholder="ex. Réussie, Perdue"></div>
         <div class="pp-actions">
           <button class="btn small" id="pp-dup" type="button">Dupliquer</button>
@@ -1555,6 +1573,7 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
       if (c + w > COLS) c = COLS - w;
       var it = { id: id, type: b.type === "label" ? "label" : "button", label: b.label.slice(0, 30), c: c, r: clampInt(b.r, 0, MAX_ROW, 0), w: w, h: clampInt(b.h, 1, 200, 1) };
       it.bw = clampInt(b.bw, 0, 8, 0);
+      it.dur = b.dur === "toggle" ? "toggle" : "";
       it.pat = isPat(b.pat) ? b.pat : (PAT_OLD[b.pat] || "none");
       it.bd = isHex(b.bd) ? b.bd.toUpperCase() : "";
       if (it.type === "label") it.color = isHex(b.color) ? b.color.toUpperCase() : "";
@@ -2146,7 +2165,7 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
       tag = { id: uid("t"), p: d.p, t: d.t, v: v, team: activeTeam, ev: evId, lbl: lbl || evDef(evId).label, btn: btnId || "", col: col || "", d0: DEF_PRE, d1: DEF_POST, third: "", lane: "", res: "", note: "" };
       stopPlayback();
       m.tags.push(tag); currentTagId = tag.id; savePos(true); touch(m); renderMatch();
-      return;
+      return tag;
     }
     if (m.phase !== "live") return;
     tag = { id: uid("t"), p: m.period, t: periodSec(m), team: activeTeam, ev: evId, lbl: lbl || evDef(evId).label, btn: btnId || "", col: col || "", d0: DEF_PRE, d1: DEF_POST, third: "", lane: "", res: "", note: "" };
@@ -2154,6 +2173,24 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
     currentTagId = tag.id;
     touch(m);
     renderMatch();
+    return tag;
+  }
+  /* Bouton « Début → Fin » : le 1er toucher ouvre le clip, le 2e le ferme */
+  function openTagOf(m, btnId) { for (var i = m.tags.length - 1; i >= 0; i--) if (m.tags[i].btn === btnId && m.tags[i].open) return m.tags[i]; return null; }
+  function toggleTag(it) {
+    var m = cur(); if (!m) return;
+    var t = openTagOf(m, it.id);
+    if (t) {
+      var len;
+      if (isVideo(m)) len = (vid.currentTime || 0) - t.v;
+      else len = m.period === t.p ? periodSec(m) - t.t : DEF_POST;
+      t.d1 = Math.max(1, Math.round(len * 10) / 10);
+      delete t.open; currentTagId = t.id;
+      touch(m); renderMatch();
+      return;
+    }
+    t = addTag(it.key, it.label, it.id, it.color);
+    if (t) { t.d0 = 0; t.d1 = 0; t.open = true; touch(m); renderMatch(); }
   }
   function findTag(m, id) { for (var i = 0; i < m.tags.length; i++) if (m.tags[i].id === id) return m.tags[i]; return null; }
   function currentTag() { var m = cur(); return m && currentTagId ? findTag(m, currentTagId) : null; }
@@ -2375,6 +2412,7 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
       }
       else {
         node = el("button", "pb" + (it.flag ? " flag" : ""));
+        if (it.dur === "toggle" && !panelMode && m && m.tags && openTagOf(m, it.id)) node.classList.add("rec");
         node.type = "button"; node.dataset.team = it.flag ? "" : it.team;
         paint(node, it.color, it.pat, it.bd, it.bw);
         node.setAttribute("aria-label", it.label);
@@ -2409,6 +2447,7 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
     var it = padEdit && padSel ? itemById(padSel) : null;
     var box = $("pad-props");
     box.hidden = !it;
+    $("pad-props-empty").hidden = !!it || !padEdit;
     if (!it) return;
     var isBtn = it.type === "button";
     var lab = $("pp-label");
@@ -2453,6 +2492,10 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
     var bc = $("pp-bd-custom"); if (bc && document.activeElement !== bc && it.bd) bc.value = it.bd.toLowerCase();
     var bwv = it.bw || (it.bd ? 2 : 1), bws = $("pp-bw").children;
     for (var z = 0; z < bws.length; z++) bws[z].setAttribute("aria-pressed", String(+bws[z].dataset.bw === bwv));
+    $("pp-dur-row").hidden = !isBtn;
+    var dsb = $("pp-dur").children;
+    for (var di = 0; di < dsb.length; di++) dsb[di].setAttribute("aria-pressed", String((dsb[di].dataset.dur || "") === (it.dur || "")));
+    $("pp-dur-note").hidden = !isBtn || it.dur !== "toggle";
     if (!isBtn) return;
     var tb = $("pp-team").children;
     for (var i = 0; i < tb.length; i++) { tb[i].textContent = teamName(m, tb[i].dataset.team); tb[i].setAttribute("aria-pressed", String(tb[i].dataset.team === it.team)); }
@@ -3515,7 +3558,7 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
     var b = e.target.closest("button"); if (!b || b.disabled) return;
     var it = itemById(b.dataset.item); if (!it || it.type !== "button") return;
     activeTeam = it.team;
-    addTag(it.key, it.label, it.id, it.color);
+    if (it.dur === "toggle") toggleTag(it); else addTag(it.key, it.label, it.id, it.color);
   });
   $("zones").addEventListener("click", function (e) {
     var b = e.target.closest("button"); var m = cur(); var tag = currentTag();
@@ -4063,6 +4106,10 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
     if (b.dataset.bd === "none") { it.bd = ""; padChanged(true); }
     else if (isHex(b.dataset.bd)) { it.bd = b.dataset.bd; padChanged(true); }
   });
+  $("pp-dur").addEventListener("click", function (e) {
+    var b = e.target.closest("button"); var it = itemById(padSel); if (!b || !it || it.type !== "button") return;
+    it.dur = b.dataset.dur === "toggle" ? "toggle" : ""; padChanged(true);
+  });
   $("pp-bw").addEventListener("click", function (e) {
     var b = e.target.closest("button"); var it = itemById(padSel); if (!b || !it) return;
     it.bw = clampInt(b.dataset.bw, 1, 8, 2); padChanged(true);
@@ -4087,7 +4134,7 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
   });
   $("pp-dup").addEventListener("click", function () {
     var it = itemById(padSel); if (!it || it.type !== "button") return;
-    var cp = { id: uid("b"), type: "button", key: uid("k"), label: it.label, team: it.team, color: it.color, pat: it.pat || "none", bd: it.bd || "", bw: it.bw || 0, res: it.res.slice(), c: it.c, r: nextFreeRow(), w: it.w, h: it.h };
+    var cp = { id: uid("b"), type: "button", key: uid("k"), label: it.label, team: it.team, color: it.color, pat: it.pat || "none", bd: it.bd || "", bw: it.bw || 0, dur: it.dur || "", res: it.res.slice(), c: it.c, r: nextFreeRow(), w: it.w, h: it.h };
     layout().push(cp); padSel = cp.id; padChanged(true);
     showToast("Bouton dupliqué, en bas du pupitre.", false);
   });
