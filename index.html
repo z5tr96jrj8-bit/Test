@@ -923,6 +923,15 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
 #view-sort .top-actions { gap: 6px; }
 #view-sort .top-actions .btn.small { min-height: 30px; padding: 3px 10px; font-size: 13px; }
 #sv-export:disabled { opacity: .45; }
+.sv-side-head { min-height: 54px; padding: 6px 0 8px; margin-bottom: 4px; }
+.sv-side-head .pane-title { padding: 0; line-height: 1.3; }
+#sv-star-only { flex: none; align-self: center; min-height: 36px; height: 36px; padding: 0 12px; font-size: 13px; display: inline-flex; align-items: center; gap: 4px; }
+#sv-cat-back { flex: none; align-self: center; }
+/* Champ date sur iPad : même taille que les autres champs */
+.nm2 input[type="date"] { -webkit-appearance: none; appearance: none; display: block; box-sizing: border-box; width: 100%; min-width: 0; max-width: 100%; height: 48px; margin: 0; padding: 0 12px; line-height: 48px; text-align: left; }
+.nm2 input[type="date"]::-webkit-date-and-time-value { text-align: left; margin: 0; }
+.nm2 .field { min-width: 0; }
+.nm2 .field input { box-sizing: border-box; height: 48px; margin: 0; }
 .sv-board { display: grid; gap: 8px; grid-template-columns: minmax(0, 1fr); }
 @media (min-width: 900px) { .sv-board { grid-template-columns: 340px minmax(0, 1fr); align-items: start; } .sv-main { position: sticky; top: 8px; } }
 .sv-main { order: -1; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
