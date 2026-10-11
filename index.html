@@ -3033,6 +3033,8 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
   var svUrls = {};   // vidéos ouvertes pendant la séance, par match
   function svGroups(a) {
     var g = {}, order = [];
+    /* Tous les boutons du panel apparaissent, même sans clip, comme sur l'écran du match */
+    padButtons().forEach(function (b) { if (!g[b.label]) { g[b.label] = { label: b.label, color: b.color, clips: [] }; order.push(b.label); } });
     pjMatches(a).forEach(function (m) {
       m.tags.forEach(function (t) {
         var k = tagLabel(t);
@@ -3094,7 +3096,6 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
       var shown = 0;
       groups.forEach(function (g, i) {
         var n = svFilter(a, g.clips).length;
-        if ((sv.star || sv.match !== "all") && !n) return;
         var li = el("li"), b = el("button"); b.type = "button"; b.dataset.scat = g.label;
         if (!n) b.className = "zero";
         b.appendChild(el("span", "nn", String(i + 1)));
@@ -3103,7 +3104,8 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
         b.appendChild(el("span", "ct", n + (n > 1 ? " clips" : " clip")));
         li.appendChild(b); list.appendChild(li); shown++;
       });
-      if (!shown) list.appendChild(el("li", "cat-none", sv.star ? "Aucun clip gardé pour l'instant. Touche ☆ sur un clip pour le garder." : "Aucun tag dans ces matchs."));
+      if (!shown) list.appendChild(el("li", "cat-none", "Aucun tag dans ton panel."));
+      else if (sv.star && !groups.some(function (g) { return svFilter(a, g.clips).length; })) list.insertBefore(el("li", "cat-none", "Aucun clip gardé pour l'instant. Ouvre un tag et touche ☆ sur un clip pour le garder."), list.firstChild);
     } else {
       var clips = svVisible(a), total = (groups.filter(function (x) { return x.label === sv.cat; })[0] || { clips: [] }).clips.length;
       $("sv-side-title").textContent = sv.cat + " · " + clips.length + (clips.length !== total ? " / " + total : "");
