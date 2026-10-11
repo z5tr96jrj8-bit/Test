@@ -896,6 +896,56 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
 #video { cursor: pointer; -webkit-tap-highlight-color: transparent; }
 .vs-badge { position: absolute; left: 10px; top: 10px; z-index: 6; padding: 6px 10px; border-radius: 4px; background: rgba(0,0,0,.72); color: #F1F2F3; font-size: 13px; font-variant-numeric: tabular-nums; pointer-events: none; }
 .vs-meta { color: #3FB27F; }
+.pj-home { margin-bottom: 22px; }
+.pj-title { font-size: 15px; font-weight: 600; margin: 0 0 10px; color: var(--muted); }
+.pj-form { display: grid; gap: 8px; padding: 14px; margin-bottom: 12px; background: var(--surface); border: 1px solid var(--line); border-radius: 6px; }
+.pj-form #pj-name { min-height: 44px; }
+.pj-lab { margin: 6px 0 0; font-size: 14px; color: var(--muted); }
+.pj-checks { display: grid; gap: 6px; max-height: 340px; overflow-y: auto; }
+.pj-checks label { display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 0 10px; border: 1px solid var(--line); border-radius: 4px; }
+.pj-checks input { width: 20px; height: 20px; }
+.ptabs { display: flex; align-items: center; gap: 4px; min-width: 0; overflow-x: auto; scrollbar-width: none; flex: 1; margin: 0 8px; }
+.ptabs::-webkit-scrollbar { display: none; }
+.ptab { flex: none; height: 32px; padding: 0 11px; border: 1px solid var(--line); border-radius: 4px; background: transparent; color: var(--muted); font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+.ptab.on { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.ptab .dot { width: 7px; height: 7px; border-radius: 50%; background: #3FB27F; }
+.ptab.add { width: 32px; padding: 0; justify-content: center; font-size: 17px; }
+.ptab.sort { color: var(--ink); }
+.ptabs .sep { flex: none; width: 1px; height: 22px; background: var(--line); margin: 0 4px; }
+#view-match .topbar:has(#ptabs:not([hidden])) { grid-template-columns: auto auto minmax(0, 1fr) auto; }
+#view-match .topbar:has(#ptabs:not([hidden])) .score { justify-content: flex-start; text-align: left; }
+@media (max-width: 760px) { #view-match .topbar:has(#ptabs:not([hidden])) { grid-template-columns: auto minmax(0, 1fr) auto; } #view-match .topbar:has(#ptabs:not([hidden])) .ptabs { grid-column: 1 / -1; grid-row: 2; margin: 0; } }
+#view-sort .topbar { margin-bottom: 8px; }
+.sv-board { display: grid; gap: 8px; grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 900px) { .sv-board { grid-template-columns: 340px minmax(0, 1fr); align-items: start; } .sv-main { position: sticky; top: 8px; } }
+.sv-main { order: -1; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+@media (min-width: 900px) { .sv-main { order: 0; } }
+.sv-side { background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 8px 12px 10px; min-width: 0; }
+.sv-side-head { display: flex; align-items: center; gap: 6px; border-bottom: 1px solid var(--line); margin-bottom: 2px; }
+.sv-side-head .pane-title { flex: 1; border: 0; margin: 0; }
+#sv-star-only[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+#sv-cats { max-height: calc(100vh - 150px); overflow-y: auto; }
+#sv-cats .sv-grp { padding: 10px 4px 4px; font-size: 12px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); }
+#sv-cats .sv-clip { display: grid; grid-template-columns: minmax(0, 1fr) 44px; align-items: center; border-top: 1px solid var(--line); }
+#sv-cats .sv-clip > button:first-child { border-top: 0; grid-template-columns: 58px minmax(0, 1fr); }
+#sv-cats .sv-clip .tm { font-variant-numeric: tabular-nums; text-decoration: underline; }
+#sv-cats .sv-clip .nm { font-weight: 400; color: var(--muted); font-size: 13px; }
+#sv-cats .sv-clip.on > button:first-child { box-shadow: inset 2px 0 0 var(--ink); background: var(--surface-2); }
+#sv-cats .st { width: 44px; min-height: 44px; border: 0; background: transparent; font-size: 20px; color: var(--muted); padding: 0; display: block; text-align: center; }
+#sv-cats .st[aria-pressed="true"] { color: #EAB308; }
+.sv-seg { display: flex; gap: 4px; padding: 4px; background: var(--surface); border: 1px solid var(--line); border-radius: 6px; overflow-x: auto; scrollbar-width: none; }
+.sv-seg button { flex: 1 0 auto; min-height: 36px; padding: 0 12px; border: 0; border-radius: 4px; background: transparent; color: var(--muted); font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; justify-content: center; gap: 6px; white-space: nowrap; }
+.sv-seg button.on { background: var(--ink); color: var(--bg); }
+.sv-seg .dot { width: 7px; height: 7px; border-radius: 50%; background: #3FB27F; }
+.sv-player { position: relative; background: #000; border-radius: 6px; overflow: hidden; aspect-ratio: 16 / 9; max-height: calc(100vh - 190px); }
+.sv-player video { width: 100%; height: 100%; display: block; object-fit: contain; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.sv-empty { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 16px; text-align: center; color: #F1F2F3; background: #000; }
+.sv-empty[hidden] { display: none; }
+.sv-empty p { margin: 0; max-width: 460px; }
+.sv-bar { display: flex; align-items: center; gap: 6px; padding: 6px 8px; background: var(--surface); border: 1px solid var(--line); border-radius: 6px; }
+.sv-now { flex: 1; min-width: 0; font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sv-now .pos { color: var(--muted); margin-left: 6px; }
+#sv-star[aria-pressed="true"] { color: #EAB308; border-color: #EAB308; }
 </style>
 </head>
 <body>
@@ -963,6 +1013,21 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
     <button class="btn small" id="btn-import" type="button">Importer</button></span>
     <input class="file-input" id="import-file" type="file" accept=".json,application/json" tabindex="-1" aria-hidden="true">
   </div>
+  <div class="pj-home">
+    <div class="home-tools">
+      <h3 class="pj-title">Projets (plusieurs matchs)</h3>
+      <button class="btn small" id="pj-new-btn" type="button">Nouveau projet</button>
+    </div>
+    <form class="pj-form" id="pj-form" hidden autocomplete="off">
+      <label for="pj-name">Nom du projet</label>
+      <input id="pj-name" maxlength="40" placeholder="ex. Rennes, phase aller">
+      <p class="pj-lab">Matchs du projet</p>
+      <div class="pj-checks" id="pj-checks"></div>
+      <div class="actions"><button class="btn" type="button" id="pj-cancel">Annuler</button><button class="btn primary" type="submit" id="pj-submit">Créer le projet</button><span class="form-error" id="pj-err" role="alert"></span></div>
+    </form>
+    <ul class="match-list" id="pj-list"></ul>
+  </div>
+  <h3 class="pj-title">Matchs</h3>
   <p class="hint sync-line" id="sync-line"></p>
   <ul class="match-list" id="match-list"></ul>
   <p class="empty" id="match-empty" hidden>Aucun projet pour l'instant. Reviens à l'accueil et choisis « Nouveau match ».</p>
@@ -980,6 +1045,40 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
   <div class="panel-host" id="panel-host"></div>
 </div>
 
+<!-- ================= Trier (projet) ================= -->
+<div class="wrap" id="view-sort" hidden>
+  <div class="topbar sv-top">
+    <button class="btn icon-btn" id="sv-back" type="button" aria-label="Retour au match" title="Retour au match"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"/></svg></button>
+    <div class="score" id="sv-head"></div>
+    <div class="top-actions"></div>
+  </div>
+  <div class="sv-board">
+    <section class="panel sv-side">
+      <div class="sv-side-head">
+        <button class="btn icon-btn" id="sv-cat-back" type="button" aria-label="Tous les tags" hidden><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"/></svg></button>
+        <h2 class="pane-title" id="sv-side-title">Par tag</h2>
+        <button class="btn small" id="sv-star-only" type="button" aria-pressed="false">★ Sélection</button>
+      </div>
+      <ul class="cat-list" id="sv-cats"></ul>
+    </section>
+    <section class="sv-main">
+      <div class="sv-seg" id="sv-seg"></div>
+      <div class="sv-player">
+        <video id="sv-video" playsinline webkit-playsinline disablepictureinpicture preload="metadata"></video>
+        <div class="sv-empty" id="sv-empty"><p id="sv-empty-text">Choisis un tag à gauche, puis un clip.</p><button class="btn primary" id="sv-empty-btn" type="button" hidden>Choisir la vidéo</button></div>
+        <input class="file-input" id="sv-one" type="file" accept="video/*" tabindex="-1" aria-hidden="true">
+      </div>
+      <div class="sv-bar">
+        <button class="btn icon-btn" id="sv-prev" type="button" aria-label="Clip précédent" title="Clip précédent"><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true"><path d="M6 5h2v14H6zM20 5v14L9 12z"/></svg></button>
+        <button class="btn icon-btn" id="sv-play" type="button" aria-label="Lecture ou pause"></button>
+        <button class="btn icon-btn" id="sv-next" type="button" aria-label="Clip suivant" title="Clip suivant"><svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true"><path d="M16 5h2v14h-2zM4 5v14l11-7z"/></svg></button>
+        <span class="sv-now" id="sv-now"></span>
+        <button class="btn small" id="sv-star" type="button" aria-pressed="false" hidden>☆ Garder</button>
+      </div>
+    </section>
+  </div>
+</div>
+
 <!-- ================= Match ================= -->
 <div class="wrap" id="view-match" hidden>
   <div class="topbar">
@@ -989,6 +1088,7 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
       <span class="goals" id="sc-goals"></span>
       <span class="name away" id="sc-away"></span>
     </div>
+    <div class="ptabs" id="ptabs" hidden></div>
     <div class="top-actions">
       <button class="btn small" id="btn-save" type="button">Sauvegarder</button>
       <button class="btn small accent" id="btn-export" type="button">Exporter</button>
@@ -2051,6 +2151,7 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
       li.appendChild(acts);
       list.appendChild(li);
     });
+    renderPjHome();
     renderSync();
   }
 
@@ -2602,6 +2703,7 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
     $("sc-home").textContent = m.home;
     $("sc-away").textContent = m.away;
     $("sc-goals").textContent = "–";
+    renderPTabs(m);
     $("board").dataset.mode = isVideo(m) ? "video" : "live";
     $("videobox").hidden = !isVideo(m);
     $("video-ask").hidden = !isVideo(m) || videoReady;
@@ -2619,6 +2721,7 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
   }
   function renderAll() {
     if (panelMode) { renderEvents(panelDummy); return; }
+    if (!$("view-sort").hidden) { renderSort(); return; }
     if (currentMatchId && cur()) { renderMatch(); } else { showHome(); }
   }
   var homeScreen = "menu";
@@ -2630,6 +2733,7 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
   }
   function showHome(screen) {
     if (screen) homeScreen = screen;
+    leaveSort();
     leavePanel();
     savePos(true);
     unloadVideo();
@@ -2642,6 +2746,7 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
     releaseWake();
   }
   function openPanelEditor() {
+    leaveSort();
     savePos(true); unloadVideo();
     currentMatchId = null; currentTagId = null;
     panelMode = true; padEdit = true; padSel = null;
@@ -2652,6 +2757,7 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
   }
   function openMatch(id) {
     if (!matches[id] || matches[id].deleted) return;
+    leaveSort();
     leavePanel();
     unloadVideo();
     listSel = null; stopPlayback(); padEdit = false; padSel = null; tlEdit = null; catSel = null; tlFilter = { team: "all", hideEmpty: false };
@@ -2809,6 +2915,305 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
   });
 
   $("btn-back").addEventListener("click", function () { showHome("projects"); });
+
+  /* ============ Projets : plusieurs matchs, onglets, page Trier ============ */
+  var pjId = null, pjEditing = null;
+  function projects() {
+    return Object.keys(matches).map(function (k) { return matches[k]; })
+      .filter(function (a) { return a && !a.deleted && a.kind === "project"; })
+      .sort(function (a, b) { return (b.createdAt || 0) - (a.createdAt || 0); });
+  }
+  function pjDoc(id) { var a = matches[id || pjId]; return a && !a.deleted && a.kind === "project" ? a : null; }
+  function pjMatches(a) { return (a.matchIds || []).map(function (id) { return matches[id]; }).filter(function (m) { return m && !m.deleted && Array.isArray(m.tags); }); }
+  function pjOf(matchId) { var l = projects(); for (var i = 0; i < l.length; i++) if ((l[i].matchIds || []).indexOf(matchId) >= 0) return l[i]; return null; }
+  /* Nom court d'un match dans un projet : l'adversaire (l'équipe qui n'est pas commune à tous les matchs). */
+  function pjLabel(a, m) {
+    var ms = pjMatches(a), common = null;
+    if (ms.length >= 2) [m.home, m.away].forEach(function (t) { if (!common && ms.every(function (x) { return x.home === t || x.away === t; })) common = t; });
+    var lab = common ? (m.home === common ? m.away : m.home) : m.home + " – " + m.away;
+    return lab.length > 22 ? lab.slice(0, 21) + "…" : lab;
+  }
+  function renderPjHome() {
+    var list = $("pj-list"); list.textContent = "";
+    projects().forEach(function (a) {
+      var li = el("li", "match-row"), info = el("div", "info");
+      info.appendChild(el("div", "teams", a.name));
+      var ms = pjMatches(a), n = 0; ms.forEach(function (m) { n += m.tags.length; });
+      info.appendChild(el("div", "meta", ms.length + (ms.length > 1 ? " matchs · " : " match · ") + n + (n > 1 ? " tags" : " tag") + (ms.length ? " · " + ms.map(function (m) { return pjLabel(a, m); }).join(", ") : "")));
+      li.appendChild(info);
+      var acts = el("div", "row-actions");
+      var o = el("button", "btn small primary", "Ouvrir"); o.type = "button"; o.dataset.popen = a.id;
+      var e = el("button", "btn small", "Modifier"); e.type = "button"; e.dataset.pedit = a.id;
+      var d = el("button", "btn small danger", "Supprimer"); d.type = "button"; d.dataset.pdel = a.id;
+      acts.appendChild(o); acts.appendChild(e); acts.appendChild(d); li.appendChild(acts); list.appendChild(li);
+    });
+  }
+  function openPjForm(a) {
+    pjEditing = a ? a.id : null;
+    var box = $("pj-checks"); box.textContent = "";
+    var ms = liveMatches();
+    ms.forEach(function (m) {
+      var lab = el("label"), cb = el("input"); cb.type = "checkbox"; cb.value = m.id;
+      cb.checked = !!(a && (a.matchIds || []).indexOf(m.id) >= 0);
+      lab.appendChild(cb);
+      var meta = [m.home + " – " + m.away]; if (m.date) meta.push(m.date.split("-").reverse().join("/")); meta.push(m.tags.length + " tags");
+      if (vsMeta[m.id]) meta.push("vidéo gardée");
+      lab.appendChild(el("span", "", meta.join(" · ")));
+      box.appendChild(lab);
+    });
+    if (!ms.length) box.appendChild(el("p", "empty", "Aucun match pour l'instant. Crée d'abord tes matchs avec « Nouveau match »."));
+    $("pj-name").value = a ? a.name : "";
+    $("pj-err").textContent = "";
+    $("pj-submit").textContent = a ? "Enregistrer" : "Créer le projet";
+    $("pj-form").hidden = false;
+    $("pj-name").focus();
+  }
+  $("pj-new-btn").addEventListener("click", function () { openPjForm(null); });
+  $("pj-cancel").addEventListener("click", function () { $("pj-form").hidden = true; pjEditing = null; });
+  $("pj-form").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var ids = [].slice.call($("pj-checks").querySelectorAll("input:checked")).map(function (c) { return c.value; });
+    var name = $("pj-name").value.trim();
+    if (!ids.length) { $("pj-err").textContent = "Coche au moins un match."; return; }
+    var a = pjEditing && pjDoc(pjEditing);
+    if (a) {
+      var keep = (a.matchIds || []).filter(function (id) { return ids.indexOf(id) >= 0; });
+      ids.forEach(function (id) { if (keep.indexOf(id) < 0) keep.push(id); });
+      a.matchIds = keep; a.name = name || a.name;
+    } else {
+      /* Ordre : du plus ancien au plus récent */
+      ids.sort(function (x, y) { var mx = matches[x], my = matches[y]; return ((mx.date || "") + (mx.createdAt || 0)).localeCompare((my.date || "") + (my.createdAt || 0)); });
+      a = { id: uid("p"), kind: "project", name: name || "Projet", matchIds: ids, stars: {}, createdAt: Date.now() };
+      matches[a.id] = a;
+    }
+    touch(a);
+    $("pj-form").hidden = true; pjEditing = null;
+    pjId = a.id;
+    var first = pjMatches(a)[0]; if (first) openMatch(first.id); else renderHome();
+  });
+  $("pj-list").addEventListener("click", function (e) {
+    var b = e.target.closest("button"); if (!b) return;
+    if (b.dataset.popen) { var a = pjDoc(b.dataset.popen); if (!a) return; pjId = a.id; var ms = pjMatches(a); var last = ms.filter(function (m) { return m.id === a.last; })[0] || ms[0]; if (last) openMatch(last.id); }
+    else if (b.dataset.pedit) openPjForm(pjDoc(b.dataset.pedit));
+    else if (b.dataset.pdel) {
+      var p = matches[b.dataset.pdel]; if (!p) return;
+      snapshot(p);
+      matches[p.id] = { id: p.id, deleted: true, updatedAt: Date.now() };
+      saveLocal(); markDirty(p.id); renderHome();
+      showToast("Projet supprimé. Ses matchs, eux, sont conservés.", true);
+    }
+  });
+  function renderPTabs(m) {
+    var box = $("ptabs");
+    var a = pjId && pjDoc() && (pjDoc().matchIds || []).indexOf(m.id) >= 0 ? pjDoc() : pjOf(m.id);
+    pjId = a ? a.id : null;
+    box.hidden = !a; box.textContent = "";
+    if (!a) return;
+    if (a.last !== m.id) { a.last = m.id; saveLocal(); }
+    pjMatches(a).forEach(function (x) {
+      var b = el("button", "ptab" + (x.id === m.id ? " on" : "")); b.type = "button"; b.dataset.ptab = x.id;
+      if (vsMeta[x.id]) { var d = el("span", "dot"); d.title = "Vidéo gardée sur l'appareil"; b.appendChild(d); }
+      b.appendChild(document.createTextNode(pjLabel(a, x)));
+      b.title = x.home + " – " + x.away;
+      box.appendChild(b);
+    });
+    var add = el("button", "ptab add", "+"); add.type = "button"; add.dataset.padd = "1"; add.setAttribute("aria-label", "Ajouter un match au projet"); box.appendChild(add);
+    box.appendChild(el("span", "sep"));
+    var so = el("button", "ptab sort", "⇅ Trier"); so.type = "button"; so.dataset.psort = "1"; box.appendChild(so);
+  }
+  $("ptabs").addEventListener("click", function (e) {
+    var b = e.target.closest("button"); if (!b) return;
+    if (b.dataset.ptab) { if (!cur() || cur().id !== b.dataset.ptab) openMatch(b.dataset.ptab); }
+    else if (b.dataset.padd) { var a = pjDoc(); if (!a) return; showHome("projects"); openPjForm(a); }
+    else if (b.dataset.psort) openSort();
+  });
+
+  /* ---- Page Trier ---- */
+  var sv = { cat: null, match: "all", cur: null, end: null, star: false, mid: null, pending: null, back: null };
+  var svUrls = {};   // vidéos ouvertes pendant la séance, par match
+  function svGroups(a) {
+    var g = {}, order = [];
+    pjMatches(a).forEach(function (m) {
+      m.tags.forEach(function (t) {
+        var k = tagLabel(t);
+        if (!g[k]) { g[k] = { label: k, color: tagColor(t), clips: [] }; order.push(k); }
+        g[k].clips.push({ m: m, t: t, key: m.id + ":" + t.id });
+      });
+    });
+    var pos = {}; padButtons().forEach(function (b, i) { if (!(b.label in pos)) pos[b.label] = i; });
+    order.sort(function (x, y) { return (x in pos ? pos[x] : 999) - (y in pos ? pos[y] : 999) || x.localeCompare(y); });
+    return order.map(function (k) {
+      g[k].clips.sort(function (p, q) { return (a.matchIds.indexOf(p.m.id) - a.matchIds.indexOf(q.m.id)) || ((tlPos(p.m, p.t) || 0) - (tlPos(q.m, q.t) || 0)); });
+      return g[k];
+    });
+  }
+  function svFilter(a, clips) {
+    return clips.filter(function (c) { return (sv.match === "all" || c.m.id === sv.match) && (!sv.star || (a.stars && a.stars[c.key])); });
+  }
+  function svVisible(a) { var g = svGroups(a).filter(function (x) { return x.label === sv.cat; })[0]; return g ? svFilter(a, g.clips) : []; }
+  function openSort() {
+    var a = pjDoc(); if (!a) return;
+    sv.back = currentMatchId;
+    savePos(true); unloadVideo(); currentMatchId = null; currentTagId = null;
+    sv.cur = null; sv.end = null; sv.mid = null; sv.pending = null;
+    if (sv.match !== "all" && (a.matchIds || []).indexOf(sv.match) < 0) sv.match = "all";
+    $("view-home").hidden = true; $("view-match").hidden = true; $("view-sort").hidden = false;
+    var v = $("sv-video"); v.pause(); v.removeAttribute("src"); delete v.dataset.match; v.load();
+    svEmpty("Choisis un tag à gauche, puis un clip.", false);
+    renderSort(); window.scrollTo(0, 0); requestWake();
+  }
+  function leaveSort() {
+    if ($("view-sort").hidden) return;
+    var v = $("sv-video"); v.pause(); v.removeAttribute("src"); delete v.dataset.match; v.load();
+    Object.keys(svUrls).forEach(function (k) { try { URL.revokeObjectURL(svUrls[k]); } catch (e) {} }); svUrls = {};
+    $("view-sort").hidden = true;
+  }
+  $("sv-back").addEventListener("click", function () {
+    var a = pjDoc(), back = sv.back && matches[sv.back] ? sv.back : (a && pjMatches(a)[0] ? pjMatches(a)[0].id : null);
+    if (back) openMatch(back); else showHome("projects");
+  });
+  function renderSort() {
+    var a = pjDoc(); if (!a) { leaveSort(); showHome("projects"); return; }
+    var ms = pjMatches(a);
+    $("sv-head").textContent = "Trier · " + a.name;
+    var seg = $("sv-seg"); seg.textContent = "";
+    var all = el("button", sv.match === "all" ? "on" : "", "Tous les matchs"); all.type = "button"; all.dataset.smatch = "all"; seg.appendChild(all);
+    ms.forEach(function (m) {
+      var b = el("button", sv.match === m.id ? "on" : ""); b.type = "button"; b.dataset.smatch = m.id; b.title = m.home + " – " + m.away;
+      if (vsMeta[m.id]) b.appendChild(el("span", "dot"));
+      b.appendChild(document.createTextNode(pjLabel(a, m)));
+      seg.appendChild(b);
+    });
+    $("sv-star-only").setAttribute("aria-pressed", String(sv.star));
+    var list = $("sv-cats"); list.textContent = "";
+    var groups = svGroups(a);
+    if (sv.cat && !groups.some(function (x) { return x.label === sv.cat; })) sv.cat = null;
+    $("sv-cat-back").hidden = !sv.cat;
+    if (!sv.cat) {
+      $("sv-side-title").textContent = sv.match === "all" ? "Par tag · tous les matchs" : "Par tag · " + pjLabel(a, matches[sv.match]);
+      var shown = 0;
+      groups.forEach(function (g, i) {
+        var n = svFilter(a, g.clips).length;
+        if ((sv.star || sv.match !== "all") && !n) return;
+        var li = el("li"), b = el("button"); b.type = "button"; b.dataset.scat = g.label;
+        if (!n) b.className = "zero";
+        b.appendChild(el("span", "nn", String(i + 1)));
+        var sw = el("span", "sw"); sw.style.background = g.color; b.appendChild(sw);
+        b.appendChild(el("span", "nm", g.label));
+        b.appendChild(el("span", "ct", n + (n > 1 ? " clips" : " clip")));
+        li.appendChild(b); list.appendChild(li); shown++;
+      });
+      if (!shown) list.appendChild(el("li", "cat-none", sv.star ? "Aucun clip gardé pour l'instant. Touche ☆ sur un clip pour le garder." : "Aucun tag dans ces matchs."));
+    } else {
+      var clips = svVisible(a), total = (groups.filter(function (x) { return x.label === sv.cat; })[0] || { clips: [] }).clips.length;
+      $("sv-side-title").textContent = sv.cat + " · " + clips.length + (clips.length !== total ? " / " + total : "");
+      var lastM = null;
+      clips.forEach(function (c) {
+        if (c.m !== lastM) { lastM = c.m; list.appendChild(el("li", "sv-grp", c.m.home + " – " + c.m.away)); }
+        var li = el("li", "sv-clip" + (sv.cur && sv.cur.key === c.key ? " on" : ""));
+        var b = el("button"); b.type = "button"; b.dataset.sclip = c.key;
+        var x = tlPos(c.m, c.t);
+        b.appendChild(el("span", "tm", x != null ? fmt(x) : "--:--"));
+        b.appendChild(el("span", "nm", c.t.note || c.t.res || ""));
+        var on = !!(a.stars && a.stars[c.key]);
+        var st = el("button", "st", on ? "★" : "☆"); st.type = "button"; st.dataset.sstar = c.key;
+        st.setAttribute("aria-pressed", String(on)); st.setAttribute("aria-label", "Garder ce clip");
+        li.appendChild(b); li.appendChild(st); list.appendChild(li);
+      });
+      if (!clips.length) list.appendChild(el("li", "cat-none", sv.star ? "Aucun clip gardé dans ce tag." : "Aucun clip de ce tag dans ce match."));
+    }
+    renderSvBar();
+  }
+  var PLAY_SVG = '<svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor" aria-hidden="true"><path d="M7 4v16l13-8z"/></svg>';
+  var PAUSE_SVG = '<svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor" aria-hidden="true"><path d="M6 4h4v16H6zM14 4h4v16h-4z"/></svg>';
+  function renderSvBar() {
+    var a = pjDoc(), v = $("sv-video");
+    $("sv-play").innerHTML = v.paused ? PLAY_SVG : PAUSE_SVG;
+    var now = $("sv-now"); now.textContent = "";
+    if (!sv.cur || !a) {
+      if (sv.mid && matches[sv.mid]) now.textContent = matches[sv.mid].home + " – " + matches[sv.mid].away;
+      $("sv-star").hidden = true; return;
+    }
+    var x = tlPos(sv.cur.m, sv.cur.t);
+    now.appendChild(document.createTextNode(tagLabel(sv.cur.t) + " · " + sv.cur.m.home + " – " + sv.cur.m.away + " · " + (x != null ? fmt(x) : "")));
+    var clips = svVisible(a), i = clips.map(function (c) { return c.key; }).indexOf(sv.cur.key);
+    if (i >= 0) now.appendChild(el("span", "pos", "clip " + (i + 1) + " / " + clips.length));
+    var on = !!(a.stars && a.stars[sv.cur.key]);
+    $("sv-star").hidden = false; $("sv-star").textContent = on ? "★ Gardé" : "☆ Garder"; $("sv-star").setAttribute("aria-pressed", String(on));
+  }
+  function svEmpty(text, btn) { $("sv-empty").hidden = false; $("sv-empty-text").textContent = text; $("sv-empty-btn").hidden = !btn; }
+  /* Donne l'adresse de la vidéo d'un match : déjà ouverte, gardée sur l'appareil, ou rien. */
+  function svUrl(m) {
+    if (svUrls[m.id]) return Promise.resolve(svUrls[m.id]);
+    return vsGet(m.id).then(function (f) { if (!f) return null; svUrls[m.id] = URL.createObjectURL(f); return svUrls[m.id]; });
+  }
+  /* Ouvre la vidéo d'un match dans le lecteur, puis lance at() une fois prête. */
+  function svOpen(m, at) {
+    var v = $("sv-video");
+    if (!isVideo(m)) { v.pause(); svEmpty("Ce match a été tagué sans vidéo.", false); return; }
+    svUrl(m).then(function (url) {
+      if ($("view-sort").hidden) return;
+      if (!url) {
+        v.pause(); sv.pending = { m: m, at: at };
+        svEmpty("La vidéo de " + m.home + " – " + m.away + " n'est pas encore sur cet appareil." + (m.video && m.video.name ? " (" + m.video.name + ")" : "") + " Choisis-la une fois, elle sera gardée.", true);
+        return;
+      }
+      $("sv-empty").hidden = true;
+      if (v.dataset.match !== m.id) { v.dataset.match = m.id; v.src = url; v.addEventListener("loadedmetadata", at, { once: true }); v.load(); }
+      else at();
+    });
+  }
+  function svPlay(c) {
+    sv.cur = c; sv.end = null; sv.mid = c.m.id;
+    var start = Math.max(0, tlPos(c.m, c.t) - pre(c.t)), end = tlPos(c.m, c.t) + post(c.t);
+    svOpen(c.m, function () { var v = $("sv-video"); try { v.currentTime = start; } catch (err) {} sv.end = end; var pr = v.play(); if (pr && pr.catch) pr.catch(function () {}); });
+    renderSort();
+  }
+  function svShowMatch(m) {
+    sv.cur = null; sv.end = null; sv.mid = m.id;
+    svOpen(m, function () { var v = $("sv-video"); v.pause(); try { v.currentTime = (m.video && m.video.pos) || 0; } catch (err) {} });
+  }
+  function svStep(d) {
+    var a = pjDoc(); if (!a || !sv.cat) return;
+    var clips = svVisible(a); if (!clips.length) return;
+    var i = sv.cur ? clips.map(function (c) { return c.key; }).indexOf(sv.cur.key) : -1;
+    svPlay(clips[i < 0 ? 0 : Math.min(clips.length - 1, Math.max(0, i + d))]);
+  }
+  function svFind(key) { var a = pjDoc(); if (!a) return null; var r = null; svGroups(a).forEach(function (g) { g.clips.forEach(function (c) { if (c.key === key) r = c; }); }); return r; }
+  function svToggle() { var v = $("sv-video"); if (!v.getAttribute("src")) { svStep(0); return; } if (v.paused) { if (sv.cur && sv.end == null && v.currentTime >= tlPos(sv.cur.m, sv.cur.t) + post(sv.cur.t) - 0.3) { svPlay(sv.cur); return; } var pr = v.play(); if (pr && pr.catch) pr.catch(function () {}); } else v.pause(); }
+  $("sv-video").addEventListener("timeupdate", function () { var v = $("sv-video"); if (sv.end != null && v.currentTime >= sv.end) { v.pause(); sv.end = null; } });
+  $("sv-video").addEventListener("play", renderSvBar);
+  $("sv-video").addEventListener("pause", renderSvBar);
+  $("sv-video").addEventListener("click", svToggle);
+  $("sv-play").addEventListener("click", svToggle);
+  $("sv-prev").addEventListener("click", function () { svStep(-1); });
+  $("sv-next").addEventListener("click", function () { svStep(1); });
+  function svStar(key) { var a = pjDoc(); if (!a) return; a.stars = a.stars || {}; if (a.stars[key]) delete a.stars[key]; else a.stars[key] = true; touch(a); renderSort(); }
+  $("sv-star").addEventListener("click", function () { if (sv.cur) svStar(sv.cur.key); });
+  $("sv-star-only").addEventListener("click", function () { sv.star = !sv.star; renderSort(); });
+  $("sv-cat-back").addEventListener("click", function () { sv.cat = null; renderSort(); });
+  $("sv-seg").addEventListener("click", function (e) {
+    var b = e.target.closest("button[data-smatch]"); if (!b) return;
+    sv.match = b.dataset.smatch;
+    if (sv.match !== "all" && matches[sv.match] && (!sv.cur || sv.cur.m.id !== sv.match)) svShowMatch(matches[sv.match]);
+    renderSort();
+  });
+  $("sv-cats").addEventListener("click", function (e) {
+    var b = e.target.closest("button"); if (!b) return;
+    if (b.dataset.scat) { sv.cat = b.dataset.scat; renderSort(); $("sv-cats").scrollTop = 0; }
+    else if (b.dataset.sstar) svStar(b.dataset.sstar);
+    else if (b.dataset.sclip) { var c = svFind(b.dataset.sclip); if (c) svPlay(c); }
+  });
+  $("sv-empty-btn").addEventListener("click", function () { $("sv-one").value = ""; $("sv-one").click(); });
+  $("sv-one").addEventListener("change", function () {
+    var f = $("sv-one").files && $("sv-one").files[0], p = sv.pending; if (!f || !p) return;
+    sv.pending = null;
+    if (svUrls[p.m.id]) { try { URL.revokeObjectURL(svUrls[p.m.id]); } catch (e) {} }
+    svUrls[p.m.id] = URL.createObjectURL(f);
+    if (p.m.video && !p.m.video.name) { p.m.video.name = f.name; touch(p.m); }
+    vsSave(p.m, f);
+    svOpen(p.m, p.at);
+  });
   $("go-new").addEventListener("click", function () { showHome("new"); });
   $("go-projects").addEventListener("click", function () { showHome("projects"); });
   $("go-panel").addEventListener("click", openPanelEditor);
