@@ -1034,11 +1034,15 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
 .event-grid button.pb { position: relative; }
 @keyframes recblink { 50% { opacity: .35; } }
 .pp-note { margin: -4px 0 4px; font-size: 13px; color: var(--muted); }
+.pp-clip { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.pp-clip-lab { font-size: 13px; color: var(--muted); min-width: 40px; }
+.pp-clip-g { display: inline-flex; align-items: center; gap: 8px; }
+.pp-clip .stepper span { min-width: 52px; }
 .pad-props-empty { margin: 0; padding: 14px; font-size: 14px; color: var(--muted); border: 1px dashed var(--line); border-radius: 6px; }
 /* Modifier le panel : réglages à droite du panel */
 @media (min-width: 900px) {
-  .panel-host { max-width: 1180px; }
-  #panel-host > .events { display: grid; grid-template-columns: minmax(0, 1fr) 400px; column-gap: 20px; align-items: start; }
+  .panel-host { max-width: none; }
+  #panel-host > .events { display: grid; grid-template-columns: 544px minmax(300px, 400px); justify-content: start; column-gap: 20px; align-items: start; width: max-content; max-width: 100%; }
   #panel-host > .events > * { grid-column: 1; }
   #panel-host > .events > .pad-props, #panel-host > .events > .pad-props-empty { grid-column: 2; grid-row: 1 / span 8; position: sticky; top: 12px; align-self: start; max-height: calc(100vh - 24px); overflow-y: auto; }
   #panel-host .pad-props .pp-row { grid-template-columns: 96px minmax(0, 1fr); }
@@ -1244,8 +1248,11 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
         <div class="pp-row" id="pp-pat-row"><span>Motif</span><div class="swatches pats" id="pp-pat"></div></div>
         <div class="pp-row" id="pp-bd-row"><span>Bord</span><div class="swatches" id="pp-bd"></div></div>
         <div class="pp-row" id="pp-bw-row"><span>Épaisseur</span><div class="pp-seg bw-seg" id="pp-bw"><button type="button" data-bw="1">1</button><button type="button" data-bw="2">2</button><button type="button" data-bw="3">3</button><button type="button" data-bw="4">4</button><button type="button" data-bw="6">6</button><button type="button" data-bw="8">8</button></div></div>
-        <div class="pp-row" id="pp-dur-row"><span>Enregistrement</span><div class="pp-seg" id="pp-dur"><button type="button" data-dur="">Clip fixe</button><button type="button" data-dur="toggle">Début → Fin</button></div></div>
-        <p class="pp-note" id="pp-dur-note" hidden>1er toucher : début du clip. 2e toucher : fin du clip.</p>
+        <div class="pp-row" id="pp-clip-row"><span>Clip</span><div class="pp-clip" id="pp-clip">
+          <span class="pp-clip-g"><span class="pp-clip-lab">Avant</span><span class="stepper"><button type="button" data-ps="pre-" aria-label="Moins de secondes avant">−</button><span id="pp-pre"></span><button type="button" data-ps="pre+" aria-label="Plus de secondes avant">+</button></span></span>
+          <span class="pp-clip-g"><span class="pp-clip-lab">Après</span><span class="stepper"><button type="button" data-ps="post-" aria-label="Moins de secondes après">−</button><span id="pp-post"></span><button type="button" data-ps="post+" aria-label="Plus de secondes après">+</button></span></span>
+        </div></div>
+        <p class="pp-note" id="pp-clip-note">Un toucher sur ce bouton garde ces secondes avant et après le moment tagué.</p>
         <div class="pp-row" id="pp-res-row"><label for="pp-res">Résultats</label><input id="pp-res" maxlength="90" placeholder="ex. Réussie, Perdue"></div>
         <div class="pp-actions">
           <button class="btn small" id="pp-dup" type="button">Dupliquer</button>
@@ -1572,7 +1579,9 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
       if (c + w > COLS) c = COLS - w;
       var it = { id: id, type: b.type === "label" ? "label" : "button", label: b.label.slice(0, 30), c: c, r: clampInt(b.r, 0, MAX_ROW, 0), w: w, h: clampInt(b.h, 1, 200, 1) };
       it.bw = clampInt(b.bw, 0, 8, 0);
-      it.dur = b.dur === "toggle" ? "toggle" : "";
+      it.dur = "";
+      it.pre = typeof b.pre === "number" ? clampInt(b.pre, 0, 60, DEF_PRE) : null;
+      it.post = typeof b.post === "number" ? clampInt(b.post, 0, 60, DEF_POST) : null;
       it.pat = isPat(b.pat) ? b.pat : (PAT_OLD[b.pat] || "none");
       it.bd = isHex(b.bd) ? b.bd.toUpperCase() : "";
       if (it.type === "label") it.color = isHex(b.color) ? b.color.toUpperCase() : "";
@@ -2156,18 +2165,19 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
   /* ============ Tags ============ */
   function addTag(evId, lbl, btnId, col) {
     var m = cur(); if (!m) return;
-    var tag;
+    var tag, bt = btnId ? itemById(btnId) : null;
+    var P0 = bt && bt.pre != null ? bt.pre : DEF_PRE, P1 = bt && bt.post != null ? bt.post : DEF_POST;
     if (isVideo(m)) {
       if (!videoReady) return;
       var v = Math.round((vid.currentTime || 0) * 10) / 10;
       var d = derive(m, v);
-      tag = { id: uid("t"), p: d.p, t: d.t, v: v, team: activeTeam, ev: evId, lbl: lbl || evDef(evId).label, btn: btnId || "", col: col || "", d0: DEF_PRE, d1: DEF_POST, third: "", lane: "", res: "", note: "" };
+      tag = { id: uid("t"), p: d.p, t: d.t, v: v, team: activeTeam, ev: evId, lbl: lbl || evDef(evId).label, btn: btnId || "", col: col || "", d0: P0, d1: P1, third: "", lane: "", res: "", note: "" };
       stopPlayback();
       m.tags.push(tag); currentTagId = tag.id; savePos(true); touch(m); renderMatch();
       return tag;
     }
     if (m.phase !== "live") return;
-    tag = { id: uid("t"), p: m.period, t: periodSec(m), team: activeTeam, ev: evId, lbl: lbl || evDef(evId).label, btn: btnId || "", col: col || "", d0: DEF_PRE, d1: DEF_POST, third: "", lane: "", res: "", note: "" };
+    tag = { id: uid("t"), p: m.period, t: periodSec(m), team: activeTeam, ev: evId, lbl: lbl || evDef(evId).label, btn: btnId || "", col: col || "", d0: P0, d1: P1, third: "", lane: "", res: "", note: "" };
     m.tags.push(tag);
     currentTagId = tag.id;
     touch(m);
@@ -2491,10 +2501,8 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
     var bc = $("pp-bd-custom"); if (bc && document.activeElement !== bc && it.bd) bc.value = it.bd.toLowerCase();
     var bwv = it.bw || (it.bd ? 2 : 1), bws = $("pp-bw").children;
     for (var z = 0; z < bws.length; z++) bws[z].setAttribute("aria-pressed", String(+bws[z].dataset.bw === bwv));
-    $("pp-dur-row").hidden = !isBtn;
-    var dsb = $("pp-dur").children;
-    for (var di = 0; di < dsb.length; di++) dsb[di].setAttribute("aria-pressed", String((dsb[di].dataset.dur || "") === (it.dur || "")));
-    $("pp-dur-note").hidden = !isBtn || it.dur !== "toggle";
+    $("pp-clip-row").hidden = !isBtn; $("pp-clip-note").hidden = !isBtn;
+    if (isBtn) { $("pp-pre").textContent = (it.pre != null ? it.pre : DEF_PRE) + " s"; $("pp-post").textContent = (it.post != null ? it.post : DEF_POST) + " s"; }
     if (!isBtn) return;
     var tb = $("pp-team").children;
     for (var i = 0; i < tb.length; i++) { tb[i].textContent = teamName(m, tb[i].dataset.team); tb[i].setAttribute("aria-pressed", String(tb[i].dataset.team === it.team)); }
@@ -4105,9 +4113,11 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
     if (b.dataset.bd === "none") { it.bd = ""; padChanged(true); }
     else if (isHex(b.dataset.bd)) { it.bd = b.dataset.bd; padChanged(true); }
   });
-  $("pp-dur").addEventListener("click", function (e) {
-    var b = e.target.closest("button"); var it = itemById(padSel); if (!b || !it || it.type !== "button") return;
-    it.dur = b.dataset.dur === "toggle" ? "toggle" : ""; padChanged(true);
+  $("pp-clip").addEventListener("click", function (e) {
+    var b = e.target.closest("button[data-ps]"); var it = itemById(padSel); if (!b || !it || it.type !== "button") return;
+    var k = b.dataset.ps, key = k.indexOf("pre") === 0 ? "pre" : "post", d = k.slice(-1) === "+" ? 1 : -1;
+    var curv = it[key] != null ? it[key] : (key === "pre" ? DEF_PRE : DEF_POST);
+    it[key] = Math.max(0, Math.min(60, curv + d)); padChanged(true);
   });
   $("pp-bw").addEventListener("click", function (e) {
     var b = e.target.closest("button"); var it = itemById(padSel); if (!b || !it) return;
@@ -4133,7 +4143,7 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
   });
   $("pp-dup").addEventListener("click", function () {
     var it = itemById(padSel); if (!it || it.type !== "button") return;
-    var cp = { id: uid("b"), type: "button", key: uid("k"), label: it.label, team: it.team, color: it.color, pat: it.pat || "none", bd: it.bd || "", bw: it.bw || 0, dur: it.dur || "", res: it.res.slice(), c: it.c, r: nextFreeRow(), w: it.w, h: it.h };
+    var cp = { id: uid("b"), type: "button", key: uid("k"), label: it.label, team: it.team, color: it.color, pat: it.pat || "none", bd: it.bd || "", bw: it.bw || 0, pre: it.pre, post: it.post, res: it.res.slice(), c: it.c, r: nextFreeRow(), w: it.w, h: it.h };
     layout().push(cp); padSel = cp.id; padChanged(true);
     showToast("Bouton dupliqué, en bas du pupitre.", false);
   });
