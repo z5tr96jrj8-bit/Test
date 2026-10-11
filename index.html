@@ -1047,7 +1047,7 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
   #panel-host > .events > .pad-props, #panel-host > .events > .pad-props-empty { grid-column: 2; grid-row: 1 / span 8; position: sticky; top: 12px; align-self: start; max-height: calc(100vh - 24px); overflow-y: auto; }
   #panel-host .pad-props .pp-row { grid-template-columns: 96px minmax(0, 1fr); }
 }
-.vsnap { position: absolute; z-index: 4; pointer-events: none; transition: opacity .18s ease; opacity: 1; }
+.vsnap { position: fixed; z-index: 4; pointer-events: none; transition: opacity .18s ease; opacity: 1; }
 .vsnap.out { opacity: 0; }
 /* Pas de sélection de texte ni de menu « Copier » quand on reste appuyé (sauf dans les champs à remplir) */
 html, body, button, video, canvas, img { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
@@ -2919,7 +2919,8 @@ input, textarea, select, [contenteditable="true"] { -webkit-user-select: text; u
     if (!r.width || !r.height) return false;
     c.width = Math.round(r.width); c.height = Math.round(r.height);
     try { c.getContext("2d").drawImage(vid, 0, 0, c.width, c.height); } catch (e) { return false; }
-    c.style.left = (r.left - br.left) + "px"; c.style.top = (r.top - br.top) + "px";
+    if (c.parentNode !== document.body) document.body.appendChild(c);
+    c.style.left = r.left + "px"; c.style.top = r.top + "px";
     c.style.width = r.width + "px"; c.style.height = r.height + "px";
     box.style.minHeight = br.height + "px";
     c.classList.remove("out"); c.hidden = false;
