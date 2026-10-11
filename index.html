@@ -1047,6 +1047,8 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
   #panel-host > .events > .pad-props, #panel-host > .events > .pad-props-empty { grid-column: 2; grid-row: 1 / span 8; position: sticky; top: 12px; align-self: start; max-height: calc(100vh - 24px); overflow-y: auto; }
   #panel-host .pad-props .pp-row { grid-template-columns: 96px minmax(0, 1fr); }
 }
+.vsnap { position: absolute; z-index: 4; pointer-events: none; transition: opacity .18s ease; opacity: 1; }
+.vsnap.out { opacity: 0; }
 </style>
 </head>
 <body>
@@ -1220,6 +1222,7 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
       </div>
       <p class="video-msg" id="video-msg" hidden role="alert"></p>
       <span class="vs-badge" id="vs-badge" hidden></span>
+      <canvas class="vsnap" id="vsnap" hidden></canvas>
     </div>
     <div class="clockbar" id="clockbar">
       <div class="clock-controls" id="clock-controls"></div>
@@ -2845,8 +2848,8 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
     renderPTabs(m);
     $("board").dataset.mode = isVideo(m) ? "video" : "live";
     $("videobox").hidden = !isVideo(m);
-    $("video-ask").hidden = !isVideo(m) || videoReady;
     var loadingStored = vsLoading === m.id;
+    $("video-ask").hidden = !isVideo(m) || videoReady || snapActive();
     $("video-ask-text").textContent = loadingStored ? "Ouverture de la vidéo enregistrée sur l'appareil…" : (m.video && m.video.name ? "Rechoisis la vidéo de ce match : " + m.video.name : "Choisis la vidéo de ce match.");
     $("video-ask-btn").hidden = loadingStored;
     $("video-ask-note").textContent = vsOk ? "Une fois choisie, la vidéo est gardée sur cet appareil : tu n'auras plus à la rechoisir. Tes tags, eux, sont toujours conservés." : "Le navigateur ne garde pas la vidéo d'une fois sur l'autre. Tes tags, eux, sont conservés.";
@@ -2903,8 +2906,36 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
     renderEvents(panelDummy);
     window.scrollTo(0, 0);
   }
+  /* Changement de match : on fige la dernière image le temps que la nouvelle vidéo soit prête (pas de flash noir) */
+  var snapTimer = 0;
+  function snapFrame() {
+    var box = $("videobox"), c = $("vsnap");
+    if (!videoReady || !vid.videoWidth || box.hidden) return false;
+    var r = vid.getBoundingClientRect(), br = box.getBoundingClientRect();
+    if (!r.width || !r.height) return false;
+    c.width = Math.round(r.width); c.height = Math.round(r.height);
+    try { c.getContext("2d").drawImage(vid, 0, 0, c.width, c.height); } catch (e) { return false; }
+    c.style.left = (r.left - br.left) + "px"; c.style.top = (r.top - br.top) + "px";
+    c.style.width = r.width + "px"; c.style.height = r.height + "px";
+    box.style.minHeight = br.height + "px";
+    c.classList.remove("out"); c.hidden = false;
+    clearTimeout(snapTimer); snapTimer = setTimeout(hideSnap, 4000);
+    return true;
+  }
+  function hideSnap() {
+    var c = $("vsnap"); if (c.hidden) return;
+    clearTimeout(snapTimer);
+    c.classList.add("out");
+    setTimeout(function () {
+      c.hidden = true; c.classList.remove("out"); $("videobox").style.minHeight = "";
+      var m = cur(); if (m && isVideo(m) && !videoReady && !$("view-match").hidden) $("video-ask").hidden = false;
+    }, 180);
+  }
+  function snapActive() { return !$("vsnap").hidden; }
   function openMatch(id) {
     if (!matches[id] || matches[id].deleted) return;
+    var sameView = !$("view-match").hidden && currentMatchId && currentMatchId !== id && isVideo(matches[id]) && vsMeta[id];
+    if (!(sameView && snapFrame())) hideSnap();
     leaveSort();
     leavePanel();
     unloadVideo();
@@ -3547,7 +3578,8 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
   vid.addEventListener("error", function () { if (vid.getAttribute("src")) videoError(); });
   vid.addEventListener("play", function () { var m = cur(); if (m) renderClockBar(m); });
   vid.addEventListener("pause", function () { var m = cur(); if (m) { savePos(true); renderClockBar(m); } });
-  vid.addEventListener("seeked", function () { if (play) play.waiting = false; renderClock(); });
+  vid.addEventListener("seeked", function () { if (play) play.waiting = false; renderClock(); if (videoReady && snapActive()) hideSnap(); });
+  vid.addEventListener("loadeddata", function () { var m = cur(); if (videoReady && snapActive() && !(m && m.video && m.video.pos > 0)) hideSnap(); });
   vid.addEventListener("timeupdate", playTick);
   $("team-toggle").addEventListener("click", function (e) {
     var b = e.target.closest("button"); if (!b) return;
