@@ -1017,6 +1017,13 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
 .nm-drop-btn { width: 100%; min-height: 140px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; padding: 14px; border: 1.5px dashed #3C4048; border-radius: 8px; background: transparent; color: var(--muted); font-size: 14px; text-align: center; }
 .nm-drop-btn b { color: var(--ink); font-size: 15px; }
 .nm-drop-btn .video-pick-name { flex: none; }
+/* Formulaire de projet */
+.pj-form { gap: 10px; padding: 18px; }
+.pj-form label[for="pj-name"] { font-size: 14px; color: var(--muted); }
+.pj-form #pj-name { width: 100%; box-sizing: border-box; height: 48px; padding: 0 12px; background: var(--bg); border: 1px solid var(--line); border-radius: 4px; color: var(--ink); font: inherit; }
+.pj-form .actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 6px; }
+.pj-form .actions .btn { min-height: 44px; }
+.pj-none { margin: 0; padding: 4px 0; font-size: 14px; color: var(--muted); }
 .nm-drop-btn:hover, .nm-drop-btn:active { border-color: var(--ink); }
 .nm-drop #f-video-clear { margin-top: 8px; }
 .nm2 .actions { margin-top: 20px; display: grid; gap: 8px; }
@@ -3085,7 +3092,7 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
       lab.appendChild(el("span", "", meta.join(" · ")));
       box.appendChild(lab);
     });
-    if (!ms.length) box.appendChild(el("p", "empty", "Aucun match pour l'instant. Crée d'abord tes matchs avec « Nouveau match »."));
+    if (!ms.length) box.appendChild(el("p", "pj-none", "Aucun match pour l'instant. Tu peux créer le projet maintenant, puis lui ajouter des matchs avec « Nouveau match »."));
     $("pj-name").value = a ? a.name : "";
     $("pj-err").textContent = "";
     $("pj-submit").textContent = a ? "Enregistrer" : "Créer le projet";
@@ -3099,7 +3106,6 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
     e.preventDefault();
     var ids = [].slice.call($("pj-checks").querySelectorAll("input:checked")).map(function (c) { return c.value; });
     var name = $("pj-name").value.trim();
-    if (!ids.length) { $("pj-err").textContent = "Coche au moins un match."; return; }
     var a = pjEditing && pjDoc(pjEditing);
     if (a) {
       var keep = (a.matchIds || []).filter(function (id) { return ids.indexOf(id) >= 0; });
@@ -3114,7 +3120,9 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
     touch(a);
     $("pj-form").hidden = true; pjEditing = null;
     pjId = a.id;
-    var first = pjMatches(a)[0]; if (first) openMatch(first.id); else renderHome();
+    var first = pjMatches(a)[0];
+    if (first) openMatch(first.id);
+    else { renderHome(); showToast("Projet créé. Ajoute-lui des matchs avec « Nouveau match », en choisissant ce projet.", false); }
   });
   function delProject(id) {
     var p = matches[id]; if (!p) return;
@@ -3127,7 +3135,7 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
     var b = e.target.closest("button"); if (!b) return;
     if (b.dataset.pnew) { openPjForm(null); return; }
     if (b.dataset.pmenu) { var id = b.dataset.pmenu; openPop(b, [["Modifier", function () { openPjForm(pjDoc(id)); }], ["Supprimer le projet", function () { delProject(id); }, true]]); return; }
-    if (b.dataset.popen) { var a = pjDoc(b.dataset.popen); if (!a) return; pjId = a.id; var ms = pjMatches(a); var last = ms.filter(function (m) { return m.id === a.last; })[0] || ms[0]; if (last) openMatch(last.id); }
+    if (b.dataset.popen) { var a = pjDoc(b.dataset.popen); if (!a) return; pjId = a.id; var ms = pjMatches(a); var last = ms.filter(function (m) { return m.id === a.last; })[0] || ms[0]; if (last) openMatch(last.id); else openPjForm(a); }
     else if (b.dataset.pedit) openPjForm(pjDoc(b.dataset.pedit));
     else if (b.dataset.pdel) {
       var p = matches[b.dataset.pdel]; if (!p) return;
