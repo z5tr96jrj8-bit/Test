@@ -1031,7 +1031,6 @@ body:has(#view-home:not([hidden]) #home-menu:not([hidden])) { background: #14151
 @media (max-width: 560px) { .nm-vs { grid-template-columns: minmax(0, 1fr); } .nm-x { display: none; } .nm-two { grid-template-columns: minmax(0, 1fr); } }
 /* Bouton Début → Fin en cours d'enregistrement */
 .event-grid button.pb.rec { box-shadow: inset 0 0 0 3px #E5484D; }
-.event-grid button.pb.rec::before { content: "● REC"; position: absolute; top: 3px; left: 6px; font-size: 10px; font-weight: 700; color: #fff; background: #E5484D; padding: 1px 5px; border-radius: 3px; animation: recblink 1.2s infinite; }
 .event-grid button.pb { position: relative; }
 @keyframes recblink { 50% { opacity: .35; } }
 .pp-note { margin: -4px 0 4px; font-size: 13px; color: var(--muted); }
