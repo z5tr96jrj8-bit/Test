@@ -2356,6 +2356,8 @@ input, textarea, select, [contenteditable="true"] { -webkit-user-select: text; u
     b.type = "button"; b.dataset.clock = action; return b;
   }
   function renderClockBar(m) {
+    /* Pendant un changement de match, on garde la barre telle quelle jusqu'à ce que la nouvelle vidéo soit prête */
+    if (isVideo(m) && !videoReady && snapActive()) return;
     var box = $("clock-controls"), extra = $("clock-extra");
     box.textContent = ""; extra.textContent = "";
     $("clockbar").classList.toggle("is-video", isVideo(m));
@@ -2415,7 +2417,7 @@ input, textarea, select, [contenteditable="true"] { -webkit-user-select: text; u
       tg[i].setAttribute("aria-pressed", String(t === activeTeam));
     }
     var grid = $("event-grid");
-    var canTag = isVideo(m) ? videoReady : m.phase === "live";
+    var canTag = isVideo(m) ? (videoReady || snapActive()) : m.phase === "live";
     grid.textContent = "";
     grid.classList.toggle("editing", padEdit);
     var maxRow = 0;
@@ -2933,7 +2935,7 @@ input, textarea, select, [contenteditable="true"] { -webkit-user-select: text; u
     c.classList.add("out");
     setTimeout(function () {
       c.hidden = true; c.classList.remove("out"); $("videobox").style.minHeight = "";
-      var m = cur(); if (m && isVideo(m) && !videoReady && !$("view-match").hidden) $("video-ask").hidden = false;
+      var m = cur(); if (m && !$("view-match").hidden) { if (isVideo(m) && !videoReady) $("video-ask").hidden = false; renderClockBar(m); renderEvents(m); }
     }, 180);
   }
   function snapActive() { return !$("vsnap").hidden; }
@@ -3583,8 +3585,14 @@ input, textarea, select, [contenteditable="true"] { -webkit-user-select: text; u
   vid.addEventListener("error", function () { if (vid.getAttribute("src")) videoError(); });
   vid.addEventListener("play", function () { var m = cur(); if (m) renderClockBar(m); });
   vid.addEventListener("pause", function () { var m = cur(); if (m) { savePos(true); renderClockBar(m); } });
-  vid.addEventListener("seeked", function () { if (play) play.waiting = false; renderClock(); if (videoReady && snapActive()) hideSnap(); });
-  vid.addEventListener("loadeddata", function () { var m = cur(); if (videoReady && snapActive() && !(m && m.video && m.video.pos > 0)) hideSnap(); });
+  function hideSnapSoon() {
+    if (!snapActive()) return;
+    var done = function () { setTimeout(function () { if (videoReady) { hideSnap(); var m = cur(); if (m) { renderClockBar(m); renderEvents(m); } } }, 120); };
+    if (vid.requestVideoFrameCallback) { var fired = false; vid.requestVideoFrameCallback(function () { if (!fired) { fired = true; done(); } }); setTimeout(function () { if (!fired) { fired = true; done(); } }, 400); }
+    else setTimeout(done, 250);
+  }
+  vid.addEventListener("seeked", function () { if (play) play.waiting = false; renderClock(); if (videoReady && snapActive()) hideSnapSoon(); });
+  vid.addEventListener("loadeddata", function () { var m = cur(); if (videoReady && snapActive() && !(m && m.video && m.video.pos > 0)) hideSnapSoon(); });
   vid.addEventListener("timeupdate", playTick);
   $("team-toggle").addEventListener("click", function (e) {
     var b = e.target.closest("button"); if (!b) return;
