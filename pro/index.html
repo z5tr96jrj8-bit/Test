@@ -1360,10 +1360,23 @@ body { font-family: "Open Sans", -apple-system, "Segoe UI", Arial, sans-serif; }
   grid-template-areas: "events video bottom" "events clock bottom" "timeline timeline timeline" !important;
 }
 #view-match.at .board:not([data-mode="video"]) { grid-template-areas: "events clock bottom" "events clock bottom" "timeline timeline timeline" !important; }
-#view-match.at .board[data-lay="2"] { grid-template-columns: 318px minmax(0, 1fr) !important; grid-template-areas: "events video" "events clock" "timeline timeline" !important; }
-#view-match.at .board[data-lay="2"] > .bottom { display: none !important; }
-#view-match.at .board[data-lay="3"] { grid-template-rows: minmax(0, 1fr) auto !important; grid-template-areas: "events video bottom" "events clock bottom" !important; }
-#view-match.at .board[data-lay="3"] > .timeline { display: none !important; }
+/* Page Codage : grand panel, vidéo, petite timeline */
+#view-match.at .board[data-lay="code"] { grid-template-columns: minmax(340px, 38%) minmax(0, 1fr) !important; grid-template-rows: minmax(0, 1fr) auto clamp(130px, 21vh, 170px) !important; grid-template-areas: "events video" "events clock" "events timeline" !important; }
+#view-match.at .board[data-lay="code"]:not([data-mode="video"]) { grid-template-areas: "events clock" "events clock" "events timeline" !important; }
+#view-match.at .board[data-lay="code"] > .bottom { display: none !important; }
+#view-match.at .board[data-lay="code"] #event-grid button.pb, #view-match.at .board[data-lay="code"] #event-grid .pad-grp.filled { font-size: 13.5px !important; line-height: 15px !important; }
+#view-match.at .board[data-lay="code"] .at-tlt #clip-row .stepper, #view-match.at .board[data-lay="code"] .at-zs, #view-match.at .board[data-lay="code"] .at-pps, #view-match.at .board[data-lay="code"] .at-tlt .at-sel .m { display: none !important; }
+#view-match.at .board[data-lay="code"] { --lw: 150px; }
+#view-match.at .board[data-lay="code"] .timeline { --lw: 150px; }
+/* Page Analyse : pas de panel, grande vidéo, liste des codes, grande timeline pour trier */
+#view-match.at .board[data-lay="ana"] { grid-template-columns: minmax(0, 1fr) 270px !important; grid-template-rows: minmax(0, 1fr) auto minmax(220px, 46%) !important; grid-template-areas: "video bottom" "clock bottom" "timeline timeline" !important; }
+#view-match.at .board[data-lay="ana"]:not([data-mode="video"]) { grid-template-areas: "clock bottom" "clock bottom" "timeline timeline" !important; }
+#view-match.at .board[data-lay="ana"] > .events { display: none !important; }
+/* sélecteur de page */
+.at-mode { display: flex; background: #1A1A1A; border-radius: 3px; padding: 2px; gap: 2px; margin: 0 4px; }
+.at-mode button { height: 26px; padding: 0 14px; border: 0; border-radius: 2px; background: transparent; color: #CFCFCF; display: flex; align-items: center; gap: 7px; font-size: 12.5px; font-weight: 600; }
+.at-mode button.on { background: #E9E9E9; color: #111; }
+.at-dock .dk button.md.on { background: #F2F2F2; } .at-dock .dk button.md.on svg { color: #111 !important; }
 #view-match.at .board > * { min-width: 0; min-height: 0; margin: 0 !important; }
 #view-match.at .events, #view-match.at .videobox, #view-match.at .clockbar, #view-match.at .timeline, #view-match.at .board > .bottom {
   background: #333 !important; border: 1px solid #141414 !important; outline: 0 !important; border-radius: 0 !important; box-shadow: none !important; }
@@ -1529,7 +1542,7 @@ body { font-family: "Open Sans", -apple-system, "Segoe UI", Arial, sans-serif; }
 .pop button:hover, .pop button:active { background: #E9E9E9 !important; color: #111 !important; }
 
 /* écrans étroits : la marque et le nom laissent la place aux icônes */
-@media (max-width: 1060px) { .at-dock .logo, .at-dock .who { width: auto; } .at-dock .who span, .at-dock .logo i { display: none; } #view-match.at .board { grid-template-columns: 280px minmax(0, 1fr) 220px !important; } }
+@media (max-width: 1060px) { .at-dock .logo, .at-dock .who { width: auto; } .at-dock .who span, .at-dock .logo i { display: none; }  }
 
 @media (max-width: 1250px) { .at-pps { display: none; } }
 #view-match.at #event-grid button.pb { padding: 0 14px !important; }
@@ -4914,12 +4927,12 @@ body { font-family: "Open Sans", -apple-system, "Segoe UI", Arial, sans-serif; }
      Menus, barre d'outils, panel en grille, liste des codes, barre de
      timeline, barre d'icônes. Tout est branché sur les fonctions du logiciel.
      ===================================================================== */
-  var AT_I = {"cam": "<rect x=\"3\" y=\"7\" width=\"12\" height=\"10\" rx=\"1.5\"/><path d=\"m15 10.5 6-3v9l-6-3z\"/>", "chart": "<path d=\"M4 19V5M4 19h16M7 15l4-5 3 3 5-7\"/>", "check": "<path d=\"m5 12.5 4.5 4.5L19 7.5\"/>", "chevd": "<path d=\"m6 9 6 6 6-6\"/>", "chevr": "<path d=\"m9 6 6 6-6 6\"/>", "clipboard": "<rect x=\"6\" y=\"5\" width=\"12\" height=\"15\" rx=\"1\"/><path d=\"M9 5V3.5h6V5M9 10h6M9 14h6\"/>", "clock": "<circle cx=\"12\" cy=\"12\" r=\"8\"/><path d=\"M12 7.5V12l3 2\"/>", "cloud": "<path d=\"M7 18a4 4 0 0 1-.6-7.95A5.5 5.5 0 0 1 17 9.2 4.4 4.4 0 0 1 16.8 18z\"/>", "export": "<path d=\"M12 14V4M8 8l4-4 4 4M5 17v3h14v-3\"/>", "film": "<rect x=\"3\" y=\"5\" width=\"18\" height=\"14\" rx=\"1\"/><path d=\"M7.5 5v14M16.5 5v14M3 9.5h4.5M3 14.5h4.5M16.5 9.5H21M16.5 14.5H21\"/>", "full": "<path d=\"M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5\"/>", "funnel": "<path d=\"M4 5h16l-6 7.5V19l-4-2v-4.5z\"/>", "gear": "<circle cx=\"12\" cy=\"12\" r=\"3\"/><path d=\"M12 2.8v2.6M12 18.6v2.6M2.8 12h2.6M18.6 12h2.6M5.5 5.5l1.8 1.8M16.7 16.7l1.8 1.8M5.5 18.5l1.8-1.8M16.7 7.3l1.8-1.8\"/>", "home": "<path d=\"M3 11.5 12 4l9 7.5M5.5 10v9.5h13V10\"/>", "import": "<path d=\"M12 4v10M8 10l4 4 4-4M5 17v3h14v-3\"/>", "lay1": "<rect x=\"3\" y=\"4\" width=\"18\" height=\"16\" rx=\"1\"/><path d=\"M3 14h18M10 4v10\"/>", "lay2": "<rect x=\"3\" y=\"4\" width=\"18\" height=\"16\" rx=\"1\"/><path d=\"M9 4v16M9 13h12\"/>", "lay3": "<rect x=\"3\" y=\"4\" width=\"18\" height=\"16\" rx=\"1\"/><path d=\"M3 10h18M3 15h18\"/>", "layers": "<path d=\"M12 4 3 9l9 5 9-5zM3 13.5l9 5 9-5\"/>", "mnext": "<path d=\"M18 5v14\"/><path d=\"M6 5v14l10-7z\" fill=\"currentColor\" stroke=\"none\"/>", "mprev": "<path d=\"M6 5v14\"/><path d=\"M18 5v14L8 12z\" fill=\"currentColor\" stroke=\"none\"/>", "pencil": "<path d=\"m5 19 1.2-4.5L16.5 4.2l3.3 3.3L9.5 17.8zM14.5 6.2l3.3 3.3\"/>", "photo": "<rect x=\"3\" y=\"7\" width=\"18\" height=\"12\" rx=\"2\"/><circle cx=\"12\" cy=\"13\" r=\"3.4\"/><path d=\"M8.5 7 10 4.5h4L15.5 7\"/>", "play": "<path d=\"M7 4.5v15l12-7.5z\" fill=\"currentColor\" stroke=\"none\"/>", "save": "<path d=\"M5 4h11l3 3v13H5zM8 4v5h7V4M8 20v-6h8v6\"/>", "selbox": "<path d=\"M4 4h4M4 4v4M20 4h-4M20 4v4M4 20h4M4 20v-4M20 20h-4M20 20v-4\"/><rect x=\"8.5\" y=\"8.5\" width=\"7\" height=\"7\"/>", "share": "<circle cx=\"6\" cy=\"12\" r=\"2.2\"/><circle cx=\"18\" cy=\"6\" r=\"2.2\"/><circle cx=\"18\" cy=\"18\" r=\"2.2\"/><path d=\"m8 11 8-4M8 13l8 4\"/>", "sliders": "<path d=\"M4 7h9M19 7h1M4 17h3M13 17h7\"/><circle cx=\"16\" cy=\"7\" r=\"2.2\"/><circle cx=\"10\" cy=\"17\" r=\"2.2\"/>", "sort": "<path d=\"M7 5v14M4 16l3 3 3-3M17 19V5M14 8l3-3 3 3\"/>", "split": "<rect x=\"3\" y=\"5\" width=\"18\" height=\"14\" rx=\"1\"/><path d=\"M12 5v14\"/>", "star": "<path d=\"M12 3.5l2.6 5.4 5.9.8-4.3 4.1 1 5.9-5.2-2.8-5.2 2.8 1-5.9L3.5 9.7l5.9-.8z\" fill=\"currentColor\" stroke=\"none\"/>", "staro": "<path d=\"M12 3.5l2.6 5.4 5.9.8-4.3 4.1 1 5.9-5.2-2.8-5.2 2.8 1-5.9L3.5 9.7l5.9-.8z\"/>", "tag": "<path d=\"M4 4h8l8 8-8 8-8-8z\"/><circle cx=\"8.5\" cy=\"8.5\" r=\"1.3\"/>", "trophy": "<path d=\"M8 4h8v5a4 4 0 0 1-8 0zM8 6H5v1.5A3 3 0 0 0 8 10.5M16 6h3v1.5a3 3 0 0 1-3 3M12 13v4M8.5 20h7M10 17h4\"/>", "undo": "<path d=\"M8 6 4 10l4 4M4 10h10a5 5 0 0 1 0 10h-3\"/>", "user": "<circle cx=\"12\" cy=\"8\" r=\"3.6\"/><path d=\"M5 20c0-4 3.2-6 7-6s7 2 7 6\"/>", "zin": "<circle cx=\"11\" cy=\"11\" r=\"6\"/><path d=\"m15.5 15.5 4.5 4.5M8.5 11h5M11 8.5v5\"/>", "zout": "<circle cx=\"11\" cy=\"11\" r=\"6\"/><path d=\"m15.5 15.5 4.5 4.5M8.5 11h5\"/>"};
+  var AT_I = {"cam": "<rect x=\"3\" y=\"7\" width=\"12\" height=\"10\" rx=\"1.5\"/><path d=\"m15 10.5 6-3v9l-6-3z\"/>", "chart": "<path d=\"M4 19V5M4 19h16M7 15l4-5 3 3 5-7\"/>", "check": "<path d=\"m5 12.5 4.5 4.5L19 7.5\"/>", "chevd": "<path d=\"m6 9 6 6 6-6\"/>", "chevr": "<path d=\"m9 6 6 6-6 6\"/>", "clipboard": "<rect x=\"6\" y=\"5\" width=\"12\" height=\"15\" rx=\"1\"/><path d=\"M9 5V3.5h6V5M9 10h6M9 14h6\"/>", "clock": "<circle cx=\"12\" cy=\"12\" r=\"8\"/><path d=\"M12 7.5V12l3 2\"/>", "cloud": "<path d=\"M7 18a4 4 0 0 1-.6-7.95A5.5 5.5 0 0 1 17 9.2 4.4 4.4 0 0 1 16.8 18z\"/>", "export": "<path d=\"M12 14V4M8 8l4-4 4 4M5 17v3h14v-3\"/>", "film": "<rect x=\"3\" y=\"5\" width=\"18\" height=\"14\" rx=\"1\"/><path d=\"M7.5 5v14M16.5 5v14M3 9.5h4.5M3 14.5h4.5M16.5 9.5H21M16.5 14.5H21\"/>", "full": "<path d=\"M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5\"/>", "funnel": "<path d=\"M4 5h16l-6 7.5V19l-4-2v-4.5z\"/>", "gear": "<circle cx=\"12\" cy=\"12\" r=\"3\"/><path d=\"M12 2.8v2.6M12 18.6v2.6M2.8 12h2.6M18.6 12h2.6M5.5 5.5l1.8 1.8M16.7 16.7l1.8 1.8M5.5 18.5l1.8-1.8M16.7 7.3l1.8-1.8\"/>", "home": "<path d=\"M3 11.5 12 4l9 7.5M5.5 10v9.5h13V10\"/>", "import": "<path d=\"M12 4v10M8 10l4 4 4-4M5 17v3h14v-3\"/>", "layers": "<path d=\"M12 4 3 9l9 5 9-5zM3 13.5l9 5 9-5\"/>", "mnext": "<path d=\"M18 5v14\"/><path d=\"M6 5v14l10-7z\" fill=\"currentColor\" stroke=\"none\"/>", "mprev": "<path d=\"M6 5v14\"/><path d=\"M18 5v14L8 12z\" fill=\"currentColor\" stroke=\"none\"/>", "pencil": "<path d=\"m5 19 1.2-4.5L16.5 4.2l3.3 3.3L9.5 17.8zM14.5 6.2l3.3 3.3\"/>", "photo": "<rect x=\"3\" y=\"7\" width=\"18\" height=\"12\" rx=\"2\"/><circle cx=\"12\" cy=\"13\" r=\"3.4\"/><path d=\"M8.5 7 10 4.5h4L15.5 7\"/>", "play": "<path d=\"M7 4.5v15l12-7.5z\" fill=\"currentColor\" stroke=\"none\"/>", "save": "<path d=\"M5 4h11l3 3v13H5zM8 4v5h7V4M8 20v-6h8v6\"/>", "selbox": "<path d=\"M4 4h4M4 4v4M20 4h-4M20 4v4M4 20h4M4 20v-4M20 20h-4M20 20v-4\"/><rect x=\"8.5\" y=\"8.5\" width=\"7\" height=\"7\"/>", "share": "<circle cx=\"6\" cy=\"12\" r=\"2.2\"/><circle cx=\"18\" cy=\"6\" r=\"2.2\"/><circle cx=\"18\" cy=\"18\" r=\"2.2\"/><path d=\"m8 11 8-4M8 13l8 4\"/>", "sliders": "<path d=\"M4 7h9M19 7h1M4 17h3M13 17h7\"/><circle cx=\"16\" cy=\"7\" r=\"2.2\"/><circle cx=\"10\" cy=\"17\" r=\"2.2\"/>", "sort": "<path d=\"M7 5v14M4 16l3 3 3-3M17 19V5M14 8l3-3 3 3\"/>", "split": "<rect x=\"3\" y=\"5\" width=\"18\" height=\"14\" rx=\"1\"/><path d=\"M12 5v14\"/>", "star": "<path d=\"M12 3.5l2.6 5.4 5.9.8-4.3 4.1 1 5.9-5.2-2.8-5.2 2.8 1-5.9L3.5 9.7l5.9-.8z\" fill=\"currentColor\" stroke=\"none\"/>", "staro": "<path d=\"M12 3.5l2.6 5.4 5.9.8-4.3 4.1 1 5.9-5.2-2.8-5.2 2.8 1-5.9L3.5 9.7l5.9-.8z\"/>", "tag": "<path d=\"M4 4h8l8 8-8 8-8-8z\"/><circle cx=\"8.5\" cy=\"8.5\" r=\"1.3\"/>", "trophy": "<path d=\"M8 4h8v5a4 4 0 0 1-8 0zM8 6H5v1.5A3 3 0 0 0 8 10.5M16 6h3v1.5a3 3 0 0 1-3 3M12 13v4M8.5 20h7M10 17h4\"/>", "undo": "<path d=\"M8 6 4 10l4 4M4 10h10a5 5 0 0 1 0 10h-3\"/>", "user": "<circle cx=\"12\" cy=\"8\" r=\"3.6\"/><path d=\"M5 20c0-4 3.2-6 7-6s7 2 7 6\"/>", "zin": "<circle cx=\"11\" cy=\"11\" r=\"6\"/><path d=\"m15.5 15.5 4.5 4.5M8.5 11h5M11 8.5v5\"/>", "zout": "<circle cx=\"11\" cy=\"11\" r=\"6\"/><path d=\"m15.5 15.5 4.5 4.5M8.5 11h5\"/>"};
   function atIc(n, s, col, sw) { return '<svg width="' + s + '" height="' + s + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="' + (sw || 1.8) + '" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"' + (col ? ' style="color:' + col + '"' : '') + '>' + AT_I[n] + '</svg>'; }
   function atBtn(cls, html, title, fn) { var b = el("button", cls); b.type = "button"; b.innerHTML = html; if (title) { b.title = title; b.setAttribute("aria-label", title); } if (fn) b.addEventListener("click", fn); return b; }
   function atSpan(cls, html) { var s = el("span", cls); if (html) s.innerHTML = html; return s; }
-  var AT_KEY = "rl-atelier.v1", at = { hidden: {}, tab: "codes", open: null, star: false, lay: 1, zoomSet: false };
-  try { var atS = JSON.parse(localStorage.getItem(AT_KEY) || "null"); if (atS) { at.hidden = atS.hidden || {}; at.lay = atS.lay || 1; at.zoomSet = !!atS.zoomSet; } } catch (e) {}
+  var AT_KEY = "rl-atelier.v1", at = { hidden: {}, tab: "codes", open: null, star: false, lay: "code", zoomSet: false };
+  try { var atS = JSON.parse(localStorage.getItem(AT_KEY) || "null"); if (atS) { at.hidden = atS.hidden || {}; at.lay = atS.lay === "ana" ? "ana" : "code"; at.zoomSet = !!atS.zoomSet; } } catch (e) {}
   function atSave() { try { localStorage.setItem(AT_KEY, JSON.stringify({ hidden: at.hidden, lay: at.lay, zoomSet: at.zoomSet })); } catch (e) {} }
   var atUndo = null;
   var atVM = $("view-match"); atVM.classList.add("at");
@@ -4972,7 +4985,7 @@ body { font-family: "Open Sans", -apple-system, "Segoe UI", Arial, sans-serif; }
   }
   function atZoom(z) { var sc = $("tl-scroll").getBoundingClientRect(); zoomAt(z, sc.left + sc.width / 2); }
   function atSetLay(n) { at.lay = n; atSave(); atApplyLay(); }
-  function atApplyLay() { $("board").dataset.lay = String(at.lay); for (var i = 0; i < atLayBtns.length; i++) atLayBtns[i].classList.toggle("on", i + 1 === at.lay); var m = cur(); if (m) renderTimeline(m); }
+  function atApplyLay() { $("board").dataset.lay = String(at.lay); for (var i = 0; i < atLayBtns.length; i++) atLayBtns[i].classList.toggle("on", atLayBtns[i].dataset.lay === at.lay); for (var j = 0; j < atDockMode.length; j++) atDockMode[j].classList.toggle("on", atDockMode[j].dataset.lay === at.lay); if (at.lay === "ana" && currentTagId) { var rr = $("tl-rows").querySelector(".sel"); if (rr) setTimeout(function () { rr.scrollIntoView({ block: "nearest" }); }, 60); } var m = cur(); if (m) renderTimeline(m); }
   function atSetTab(t) { at.tab = t; $("bottom").dataset.tab = t; var bs = atTabs.children; for (var i = 0; i < bs.length; i++) bs[i].classList.toggle("on", bs[i].dataset.t === t); var m = cur(); if (m && t === "sum") renderSummary(m); }
 
   /* ---- Bandeau des menus ---- */
@@ -4980,7 +4993,7 @@ body { font-family: "Open Sans", -apple-system, "Segoe UI", Arial, sans-serif; }
   var AT_MENUS = [
     ["Fichier", function () { return [["Accueil", function () { showHome(); }], ["Mes projets", function () { showHome("projects"); }], ["Nouveau match", function () { showHome("new"); }], ["Sauvegarder", function () { $("btn-save").click(); }], ["Exporter…", function () { $("btn-export").click(); }]]; }],
     ["Édition", function () { return [["Annuler", atDoUndo], ["Supprimer le clip sélectionné", function () { atClip("delete"); }, true]]; }],
-    ["Affichage", function () { return [["Tout afficher", function () { atSetLay(1); }], ["Masquer la liste de droite", function () { atSetLay(2); }], ["Masquer la timeline", function () { atSetLay(3); }], [tlFilter.hideEmpty ? "Afficher les lignes sans tag" : "Masquer les lignes sans tag", function () { tlFilter.hideEmpty = !tlFilter.hideEmpty; renderTimeline(cur()); }], ["Plein écran vidéo", atFull]]; }],
+    ["Affichage", function () { return [["Page Codage", function () { atSetLay("code"); }], ["Page Analyse", function () { atSetLay("ana"); }], [tlFilter.hideEmpty ? "Afficher les lignes sans tag" : "Masquer les lignes sans tag", function () { tlFilter.hideEmpty = !tlFilter.hideEmpty; renderTimeline(cur()); }], ["Plein écran vidéo", atFull]]; }],
     ["Match", function () { return atMatchItems(); }],
     ["Codes", function () { return [["Modifier le panel", function () { openPanelEditor(); }], ["Afficher tous les codes", function () { at.hidden = {}; atSave(); renderLog(cur()); }]]; }],
     ["Clips", function () { return [["Lire le clip", function () { atClip("play"); }], ["Finir le clip ici", function () { atClip("endhere"); }], [currentTag() && atIsStar(cur(), currentTag()) ? "Ne plus garder le clip" : "Garder le clip", atToggleStar], ["Couper le clip", function () { atClip("split"); }], ["Exporter le clip", function () { atClip("export"); }], ["Trier les clips du projet", atSort]]; }],
@@ -5004,10 +5017,12 @@ body { font-family: "Open Sans", -apple-system, "Segoe UI", Arial, sans-serif; }
   var atImp = atBtn("at-b3", atIc("import", 15) + "Importer" + atIc("chevd", 11, "#CFCFCF", 2.2), null, function () { atPop(atImp, [["Changer la vidéo du match", function () { videoAction("pick"); }], ["Importer un match (fichier)", function () { showHome("projects"); var bi = $("btn-import"); if (bi) bi.click(); }]]); }); atImp.dataset.mmenu = "1";
   [atBtn("at-tbtn", atIc("undo", 16) + "Annuler", "Annuler la dernière action", atDoUndo), atSpan("at-sep"),
    atSpan("at-lab", "Match"), atCombo, atSpan("at-sep")].forEach(function (n) { atTop.appendChild(n); });
-  [["lay1", "Tout afficher"], ["lay2", "Masquer la liste de droite"], ["lay3", "Masquer la timeline"]].forEach(function (l, i) { var b = atBtn("at-tbtn ic", atIc(l[0], 17), l[1], function () { atSetLay(i + 1); }); atLayBtns.push(b); atTop.appendChild(b); });
+  var atMode = atSpan("at-mode");
+  [["code", "tag", "Codage"], ["ana", "film", "Analyse"]].forEach(function (l) { var b = atBtn("", atIc(l[1], 15) + l[2], "Page " + l[2], function () { atSetLay(l[0]); }); b.dataset.lay = l[0]; atLayBtns.push(b); atMode.appendChild(b); });
+  atTop.appendChild(atMode);
   [atSpan("at-sep"), atBtn("at-tbtn ic", atIc("photo", 17), "Capture d'image", atCapture), atBtn("at-tbtn", atIc("sort", 16) + "Trier", "Trier les clips du projet", atSort),
    atSpan("at-flex"), atImp, atBtn("at-b3 br", atIc("export", 15, null, 2.2) + "Exporter", null, function () { $("btn-export").click(); }),
-   atBtn("at-b3", atIc("clipboard", 15) + "Rapport", "Bilan du match", function () { if (at.lay === 2) atSetLay(1); atSetTab("sum"); }),
+   atBtn("at-b3", atIc("clipboard", 15) + "Rapport", "Bilan du match", function () { atSetLay("ana"); atSetTab("sum"); }),
    atBtn("at-b3", atIc("save", 15) + "Sauvegarder", null, function () { $("btn-save").click(); })].forEach(function (n) { atTop.appendChild(n); });
 
   /* ---- En-têtes de panneaux ---- */
@@ -5093,14 +5108,14 @@ body { font-family: "Open Sans", -apple-system, "Segoe UI", Arial, sans-serif; }
   $("clip-split").textContent = "Couper"; $("clip-delete").textContent = "Supprimer"; $("clip-play").textContent = "Lire"; $("clip-export").textContent = "Exporter";
 
   /* ---- Barre d'icônes du bas ---- */
-  var atDock = el("div", "at-dock");
+  var atDock = el("div", "at-dock"), atDockMode = [];
   atDock.innerHTML = '<span class="logo"><svg width="18" height="18" viewBox="0 0 18 18"><path d="M3 2v14l12-7z" fill="#E9E9E9"/></svg>RL ANALYSIS<i>PRO</i></span>';
   var atDk = el("div", "dk");
-  [["home", "#F2F2F2", "Accueil", function () { showHome(); }], ["sliders", "#35B6FF", "Modifier le panel", function () { openPanelEditor(); }], ["film", "#35B6FF", "Trier les clips", atSort],
-   ["trophy", "#FFC83D", "Mes projets", function () { showHome("projects"); }], ["clipboard", "#FFC83D", "Bilan du match", function () { if (at.lay === 2) atSetLay(1); atSetTab("sum"); }],
-   ["tag", null, "Taguer", function () { atSetTab("codes"); }], ["chart", "#7EDB5A", "Derniers tags", function () { if (at.lay === 2) atSetLay(1); atSetTab("last"); }], ["pencil", "#7EDB5A", "Zone et note du clip", function () { if (at.lay === 2) atSetLay(1); atSetTab("cur"); }],
+  [["home", "#F2F2F2", "Accueil", function () { showHome(); }], ["sliders", "#35B6FF", "Modifier le panel", function () { openPanelEditor(); }], ["sort", "#35B6FF", "Trier les clips du projet", atSort],
+   ["trophy", "#FFC83D", "Mes projets", function () { showHome("projects"); }], ["clipboard", "#FFC83D", "Bilan du match", function () { atSetLay("ana"); atSetTab("sum"); }],
+   ["tag", null, "Page Codage", function () { atSetLay("code"); }], ["film", null, "Page Analyse", function () { atSetLay("ana"); }], ["chart", "#7EDB5A", "Derniers tags", function () { atSetLay("ana"); atSetTab("last"); }], ["pencil", "#7EDB5A", "Zone et note du clip", function () { atSetLay("ana"); atSetTab("cur"); }],
    ["photo", "#FF7A45", "Capture d'image", atCapture], ["share", "#FF5252", "Exporter", function () { $("btn-export").click(); }], ["cam", "#FF5252", "Changer la vidéo", function () { videoAction("pick"); }],
-   ["cloud", "#F26FA0", "Sauvegarder", function () { $("btn-save").click(); }]].forEach(function (d) { atDk.appendChild(atBtn(d[1] ? "" : "on", atIc(d[0], 22, d[1] || "#111", 1.9), d[2], d[3])); });
+   ["cloud", "#F26FA0", "Sauvegarder", function () { $("btn-save").click(); }]].forEach(function (d) { var b = atBtn("", atIc(d[0], 22, d[1] || "#F2F2F2", 1.9), d[2], d[3]); if (!d[1]) { b.dataset.lay = d[2] === "Page Codage" ? "code" : "ana"; b.classList.add("md"); atDockMode.push(b); } atDk.appendChild(b); });
   atDock.appendChild(atDk);
   var atWho = atBtn("who", '<span>Raphaël L.<small>Analyste vidéo</small></span>' + atIc("user", 21, "#E0E0E0"), "Compte et synchronisation", function () { var b = $("btn-sync"); if (b) b.click(); });
   atDock.appendChild(atWho);
