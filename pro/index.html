@@ -1557,6 +1557,11 @@ body { font-family: "Open Sans", -apple-system, "Segoe UI", Arial, sans-serif; }
 #view-match.at .tag-list li button:last-child { font-size: 11px !important; padding: 0 2px !important; min-height: 28px !important; }
 #view-match.at .tag-list .what b { font-size: 11.5px !important; }
 
+.at-del { height: 22px; padding: 0 9px; margin-right: 6px; border: 0; border-radius: 3px; background: #5A2A2A; color: #FFD9D9; display: flex; align-items: center; gap: 6px; font-size: 11.5px; font-weight: 600; }
+.at-del:active { background: #7A3333; } .at-del:disabled { opacity: .35; }
+#panel-host .at-del { display: none; }
+#view-match.at #at-pn { display: none; }
+
 </style>
 </head>
 <body>
@@ -5034,6 +5039,11 @@ body { font-family: "Open Sans", -apple-system, "Segoe UI", Arial, sans-serif; }
   /* ---- En-têtes de panneaux ---- */
   var atPH = el("div", "at-dh"); atPH.innerHTML = 'Panel<small id="at-pn"></small><span class="sp"></span>';
   var atSeg = atSpan("at-seg"); atSeg.appendChild(atBtn("on", "Coder")); atSeg.appendChild(atBtn("", "Modifier", "Modifier le panel", function () { openPanelEditor(); })); atPH.appendChild(atSeg);
+  var atDelLast = atBtn("at-del", atIc("undo", 14) + "Suppr. dernier tag", "Supprimer le dernier tag", function () {
+    var m = cur(); if (!m || !m.tags.length) return;
+    var t = m.tags[m.tags.length - 1]; stopPlayback(); deleteTag(m, t.id);
+  });
+  atPH.insertBefore(atDelLast, atSeg);
   $("events").insertBefore(atPH, $("events").firstChild);
   var atVH = el("div", "at-dh"); atVH.innerHTML = 'Lecteur<small id="at-vn"></small><span class="sp"></span>';
   atVH.appendChild(atBtn("ib", atIc("photo", 15), "Capture d'image", atCapture)); atVH.appendChild(atBtn("ib", atIc("film", 15), "Changer la vidéo", function () { videoAction("pick"); })); atVH.appendChild(atBtn("ib", atIc("full", 15), "Plein écran", atFull));
@@ -5154,6 +5164,7 @@ body { font-family: "Open Sans", -apple-system, "Segoe UI", Arial, sans-serif; }
     atSeekPos();
     /* en-têtes */
     $("at-pn").textContent = padButtons().length + " codes";
+    var lt = m.tags.length ? m.tags[m.tags.length - 1] : null; atDelLast.disabled = !lt; atDelLast.title = lt ? "Supprimer « " + atCase(tagLabel(lt)) + " » à " + fmt(matchTime(lt.p, lt.t)) : "Aucun tag";
     $("at-vn").textContent = isVideo(m) && m.video && m.video.name ? m.video.name + (videoReady && vid.videoWidth ? " · " + vid.videoWidth + "×" + vid.videoHeight : "") : "";
     var a = atProject();
     atCombo.innerHTML = '<b></b><span class="s"></span>' + atIc("chevd", 12, "#BDBDBD", 2.2);
