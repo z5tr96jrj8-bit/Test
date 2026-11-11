@@ -1562,6 +1562,14 @@ body { font-family: "Open Sans", -apple-system, "Segoe UI", Arial, sans-serif; }
 #panel-host .at-del { display: none; }
 #view-match.at #at-pn { display: none; }
 
+.at-last { flex: 0 0 calc(100% + 12px); margin: 0 -6px; height: 40px; display: flex; align-items: center; gap: 10px; padding: 0 8px 0 12px; background: #333; border-top: 1px solid #141414; font-size: 13px; }
+.at-last .l { color: #A9A9A9; font-size: 12px; } .at-last .sw { width: 6px; height: 22px; flex: none; }
+.at-last b { font-weight: 700; color: #F2F2F2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.at-last .tm { font: 500 12.5px 'JetBrains Mono', ui-monospace, monospace; color: #CFCFCF; white-space: nowrap; } .at-last .sp { flex: 1; }
+.at-last.empty b { color: #8F8F8F; font-weight: 400; }
+.at-last .at-del { height: 30px; padding: 0 14px; margin: 0; font-size: 12.5px; background: #6B2C2C; color: #FFE3E3; }
+#view-match.at .board[data-lay="ana"] .at-last { display: none; }
+
 </style>
 </head>
 <body>
@@ -5039,11 +5047,12 @@ body { font-family: "Open Sans", -apple-system, "Segoe UI", Arial, sans-serif; }
   /* ---- En-têtes de panneaux ---- */
   var atPH = el("div", "at-dh"); atPH.innerHTML = 'Panel<small id="at-pn"></small><span class="sp"></span>';
   var atSeg = atSpan("at-seg"); atSeg.appendChild(atBtn("on", "Coder")); atSeg.appendChild(atBtn("", "Modifier", "Modifier le panel", function () { openPanelEditor(); })); atPH.appendChild(atSeg);
-  var atDelLast = atBtn("at-del", atIc("undo", 14) + "Suppr. dernier tag", "Supprimer le dernier tag", function () {
+  var atDelLast = atBtn("at-del", atIc("undo", 15) + "Supprimer", "Supprimer le dernier tag", function () {
     var m = cur(); if (!m || !m.tags.length) return;
     var t = m.tags[m.tags.length - 1]; stopPlayback(); deleteTag(m, t.id);
   });
-  atPH.insertBefore(atDelLast, atSeg);
+  var atLast = el("div", "at-last"); atLast.innerHTML = '<span class="l">Dernier tag</span><i class="sw"></i><b id="at-last-nm">Aucun</b><span class="tm" id="at-last-tm"></span><span class="sp"></span>';
+  atLast.appendChild(atDelLast); $("clockbar").appendChild(atLast);
   $("events").insertBefore(atPH, $("events").firstChild);
   var atVH = el("div", "at-dh"); atVH.innerHTML = 'Lecteur<small id="at-vn"></small><span class="sp"></span>';
   atVH.appendChild(atBtn("ib", atIc("photo", 15), "Capture d'image", atCapture)); atVH.appendChild(atBtn("ib", atIc("film", 15), "Changer la vidéo", function () { videoAction("pick"); })); atVH.appendChild(atBtn("ib", atIc("full", 15), "Plein écran", atFull));
@@ -5164,7 +5173,7 @@ body { font-family: "Open Sans", -apple-system, "Segoe UI", Arial, sans-serif; }
     atSeekPos();
     /* en-têtes */
     $("at-pn").textContent = padButtons().length + " codes";
-    var lt = m.tags.length ? m.tags[m.tags.length - 1] : null; atDelLast.disabled = !lt; atDelLast.title = lt ? "Supprimer « " + atCase(tagLabel(lt)) + " » à " + fmt(matchTime(lt.p, lt.t)) : "Aucun tag";
+    var lt = m.tags.length ? m.tags[m.tags.length - 1] : null; atDelLast.disabled = !lt; $("at-last-nm").textContent = lt ? atCase(tagLabel(lt)) : "Aucun"; $("at-last-tm").textContent = lt ? fmt(matchTime(lt.p, lt.t)) + (lt.res ? " · " + lt.res : "") : ""; atLast.querySelector(".sw").style.background = lt ? tagColor(lt) : "transparent"; atLast.classList.toggle("empty", !lt); atDelLast.title = lt ? "Supprimer « " + atCase(tagLabel(lt)) + " » à " + fmt(matchTime(lt.p, lt.t)) : "Aucun tag";
     $("at-vn").textContent = isVideo(m) && m.video && m.video.name ? m.video.name + (videoReady && vid.videoWidth ? " · " + vid.videoWidth + "×" + vid.videoHeight : "") : "";
     var a = atProject();
     atCombo.innerHTML = '<b></b><span class="s"></span>' + atIc("chevd", 12, "#BDBDBD", 2.2);
