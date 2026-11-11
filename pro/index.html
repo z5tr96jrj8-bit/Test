@@ -1361,8 +1361,14 @@ body { font-family: "Open Sans", -apple-system, "Segoe UI", Arial, sans-serif; }
 }
 #view-match.at .board:not([data-mode="video"]) { grid-template-areas: "events clock bottom" "events clock bottom" "timeline timeline timeline" !important; }
 /* Page Codage : grand panel, vidéo, petite timeline */
-#view-match.at .board[data-lay="code"] { grid-template-columns: minmax(340px, 38%) minmax(0, 1fr) !important; grid-template-rows: minmax(0, 1fr) auto clamp(130px, 21vh, 170px) !important; grid-template-areas: "events video" "events clock" "events timeline" !important; }
-#view-match.at .board[data-lay="code"]:not([data-mode="video"]) { grid-template-areas: "events clock" "events clock" "events timeline" !important; }
+#view-match.at .board[data-lay="code"] { grid-template-columns: minmax(320px, 34%) minmax(0, 1fr) !important; grid-template-rows: minmax(0, 1fr) auto !important; grid-template-areas: "events video" "events clock" !important; }
+#view-match.at .board[data-lay="code"]:not([data-mode="video"]) { grid-template-areas: "events clock" "events clock" !important; }
+#view-match.at .board[data-lay="code"] > .timeline { display: none !important; }
+#view-match.at .board[data-lay="code"] .at-seek { height: 26px; }
+#view-match.at .board[data-lay="code"] .at-seek .tr, #view-match.at .board[data-lay="code"] .at-seek .pr { top: 11px; height: 4px; }
+#view-match.at .board[data-lay="code"] .at-seek .kn { top: 6px; width: 14px; height: 14px; }
+#view-match.at .board[data-lay="code"] .at-seek #at-seek-mk i { top: 3px; height: 20px; width: 3px; margin-left: -1.5px; }
+@media (max-width: 1300px) { .at-lab, .at-combo .s { display: none !important; } .at-b3 { padding: 0 8px; margin-left: 4px; } .at-mode button { padding: 0 10px; } }
 #view-match.at .board[data-lay="code"] > .bottom { display: none !important; }
 #view-match.at .board[data-lay="code"] #event-grid button.pb, #view-match.at .board[data-lay="code"] #event-grid .pad-grp.filled { font-size: 13.5px !important; line-height: 15px !important; }
 #view-match.at .board[data-lay="code"] .at-tlt #clip-row .stepper, #view-match.at .board[data-lay="code"] .at-zs, #view-match.at .board[data-lay="code"] .at-pps, #view-match.at .board[data-lay="code"] .at-tlt .at-sel .m { display: none !important; }
