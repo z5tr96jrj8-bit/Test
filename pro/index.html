@@ -1576,6 +1576,11 @@ body { font-family: "Open Sans", -apple-system, "Segoe UI", Arial, sans-serif; }
 @media (max-width: 1250px) { .at-last .l { display: none; } }
 .at-last b { min-width: 70px; } .at-last .tm { flex: none; }
 
+#view-match.at .results button:disabled { opacity: .35; }
+#view-match.at .results .cur-empty { display: none; }
+#view-match.at #events .cur-box:not([hidden]) { display: block !important; }
+#view-match.at #events #event-grid.editing ~ .cur-box { display: none !important; }
+
 </style>
 </head>
 <body>
@@ -5226,7 +5231,15 @@ body { font-family: "Open Sans", -apple-system, "Segoe UI", Arial, sans-serif; }
   };
   var atRL = renderLog; renderLog = function (m) { atRL(m); atRefresh(m); };
   var atRM = renderMatch; renderMatch = function () { atRM(); requestAnimationFrame(atFit); };
-  var atRC = renderCurrent; renderCurrent = function (m) { atRC(m); if (!panelMode && m && m.tags) { var cb = document.querySelector("#events .cur-box"); if (cb) cb.hidden = !currentTag() || !$("results").querySelector("button"); } };
+  function atResRow() {
+    var res = $("results"), tag = currentTag();
+    if (!res.querySelector("button")) {
+      res.textContent = "";
+      ["Réussi", "Raté"].forEach(function (r) { var b = el("button", "", r); b.type = "button"; b.dataset.res = r; b.disabled = !tag; b.setAttribute("aria-pressed", String(!!tag && tag.res === r)); res.appendChild(b); });
+    }
+    var cb = document.querySelector("#events .cur-box"); if (cb) cb.hidden = !!padEdit;
+  }
+  var atRC = renderCurrent; renderCurrent = function (m) { atRC(m); if (!panelMode && m && m.tags) atResRow(); };
   var atRE = renderEvents;
   renderEvents = function (m) {
     atRE(m);
@@ -5238,7 +5251,7 @@ body { font-family: "Open Sans", -apple-system, "Segoe UI", Arial, sans-serif; }
     var tpl = []; for (var r = 0; r < max; r++) tpl.push(used[r] ? "minmax(0,1fr)" : "0px");
     grid.classList.add("at-fill"); grid.style.gridTemplateRows = tpl.join(" ");
     var sp = grid.querySelectorAll("button.pb > span:not(.rs), .pad-grp > span"); for (var i = 0; i < sp.length; i++) sp[i].textContent = atCase(sp[i].textContent);
-    if (cb) cb.hidden = !currentTag() || !$("results").querySelector("button");
+    atResRow();
   };
   var atAdd = addTag; addTag = function () { var m = cur(); if (m) atUndo = { id: m.id, json: JSON.stringify(m) }; return atAdd.apply(this, arguments); };
   var atST = showToast; showToast = function (t, w) { if (w && pendingUndo) atUndo = pendingUndo; atST(t, w); };
