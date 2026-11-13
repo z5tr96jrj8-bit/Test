@@ -1361,7 +1361,7 @@ body { font-family: "Open Sans", -apple-system, "Segoe UI", Arial, sans-serif; }
 }
 #view-match.at .board:not([data-mode="video"]) { grid-template-areas: "events clock bottom" "events clock bottom" "timeline timeline timeline" !important; }
 /* Page Codage : grand panel, vidéo, petite timeline */
-#view-match.at .board[data-lay="code"] { grid-template-columns: var(--panw, minmax(280px, 30%)) minmax(0, 1fr) !important; grid-template-rows: minmax(0, 1fr) auto !important; grid-template-areas: "events video" "events clock" !important; }
+#view-match.at .board[data-lay="code"] { grid-template-columns: var(--panw, minmax(340px, 47%)) minmax(0, 1fr) !important; grid-template-rows: var(--vidh, minmax(0, 1fr)) auto minmax(0, 1fr) !important; grid-template-areas: "events video" "events clock" "events ." !important; }
 #view-match.at .board[data-lay="code"]:not([data-mode="video"]) { grid-template-areas: "events clock" "events clock" !important; }
 #view-match.at .board[data-lay="code"] > .timeline { display: none !important; }
 #view-match.at .board[data-lay="code"] .at-seek { height: 26px; }
@@ -1580,6 +1580,11 @@ body { font-family: "Open Sans", -apple-system, "Segoe UI", Arial, sans-serif; }
 #view-match.at .results .cur-empty { display: none; }
 #view-match.at #events .cur-box:not([hidden]) { display: block !important; }
 #view-match.at #events #event-grid.editing ~ .cur-box { display: none !important; }
+
+.at-dock { display: none !important; }
+#view-match.at .board[data-lay="code"] .at-last { flex: 0 0 calc(100% + 12px); margin: 2px -6px 0; height: 46px; padding: 0 8px 0 12px; border-left: 0; border-top: 1px solid #141414; background: #333; }
+#view-match.at .board[data-lay="code"] .at-last .l { display: inline; }
+#view-match.at .board[data-lay="code"] .clock-extra { order: 0; } #view-match.at .board[data-lay="code"] .at-last { order: 3; }
 
 </style>
 </head>
@@ -5016,13 +5021,15 @@ body { font-family: "Open Sans", -apple-system, "Segoe UI", Arial, sans-serif; }
   function atZoom(z) { var sc = $("tl-scroll").getBoundingClientRect(); zoomAt(z, sc.left + sc.width / 2); }
   function atSetLay(n) { at.lay = n; atSave(); atApplyLay(); }
   function atFit() {
-    var b = $("board"); if (!b || at.lay !== "code" || $("view-match").hidden || $("videobox").hidden) { if (b) b.style.removeProperty("--panw"); return; }
+    var b = $("board"); if (!b || at.lay !== "code" || $("view-match").hidden || $("videobox").hidden) { if (b) { b.style.removeProperty("--panw"); b.style.removeProperty("--vidh"); } return; }
     var W = b.clientWidth - 8 - 4, H = b.clientHeight - 8;
-    var vh = H - $("clockbar").offsetHeight - 26 - 2;
     var ar = videoReady && vid.videoWidth && vid.videoHeight ? vid.videoWidth / vid.videoHeight : 16 / 9;
-    var pw = Math.round(W - (vh * ar + 2));
-    pw = Math.max(250, Math.min(Math.round(W * 0.42), pw));
+    var maxvh = H - $("clockbar").offsetHeight - 26 - 2;
+    var pw = Math.max(340, Math.round(W * 0.47));
+    var vh = (W - pw - 2) / ar;
+    if (vh > maxvh) { vh = maxvh; pw = Math.round(W - (vh * ar + 2)); }
     b.style.setProperty("--panw", pw + "px");
+    b.style.setProperty("--vidh", Math.floor(vh + 28) + "px");
   }
   function atApplyLay() { $("board").dataset.lay = String(at.lay); for (var i = 0; i < atLayBtns.length; i++) atLayBtns[i].classList.toggle("on", atLayBtns[i].dataset.lay === at.lay); for (var j = 0; j < atDockMode.length; j++) atDockMode[j].classList.toggle("on", atDockMode[j].dataset.lay === at.lay); if (at.lay === "ana" && currentTagId) { var rr = $("tl-rows").querySelector(".sel"); if (rr) setTimeout(function () { rr.scrollIntoView({ block: "nearest" }); }, 60); } var m = cur(); if (m) renderTimeline(m); atFit(); }
   function atSetTab(t) { at.tab = t; $("bottom").dataset.tab = t; var bs = atTabs.children; for (var i = 0; i < bs.length; i++) bs[i].classList.toggle("on", bs[i].dataset.t === t); var m = cur(); if (m && t === "sum") renderSummary(m); }
