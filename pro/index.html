@@ -1585,6 +1585,22 @@ body { font-family: "Open Sans", -apple-system, "Segoe UI", Arial, sans-serif; }
 #view-match.at .board[data-lay="code"] .at-last { flex: 0 0 calc(100% + 12px); margin: 2px -6px 0; height: 46px; padding: 0 8px 0 12px; border-left: 0; border-top: 1px solid #141414; background: #333; }
 #view-match.at .board[data-lay="code"] .at-last .l { display: inline; }
 #view-match.at .board[data-lay="code"] .clock-extra { order: 0; } #view-match.at .board[data-lay="code"] .at-last { order: 3; }
+/* Panel au style du site d'origine : boutons espacés, majuscules, bord fin */
+#view-match.at #event-grid { gap: 5px !important; padding: 10px !important; }
+#view-match.at #event-grid.at-fill > * { margin: 0 !important; }
+#view-match.at #event-grid button.pb, #view-match.at #event-grid .pad-grp.filled {
+  border-radius: 3px !important; border: 1px solid rgba(255,255,255,.22) !important;
+  font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif !important;
+  font-size: 14px !important; font-weight: 700 !important; line-height: 1.12 !important; letter-spacing: .01em !important; text-transform: uppercase !important; padding: 2px 8px !important; }
+#view-match.at .board[data-lay="code"] #event-grid button.pb, #view-match.at .board[data-lay="code"] #event-grid .pad-grp.filled { font-size: 14px !important; line-height: 1.12 !important; }
+#view-match.at #event-grid button.pb span:not(.rs), #view-match.at #event-grid .pad-grp.filled span { text-transform: uppercase !important; text-shadow: 0 1px 2px rgba(0,0,0,.35) !important; }
+#view-match.at #event-grid button.pb.c-white span:not(.rs) { text-shadow: none !important; }
+#view-match.at #event-grid .at-n { display: none !important; }
+#view-match.at .cur-box { padding: 0 10px 10px !important; }
+#view-match.at .results { gap: 5px !important; }
+#view-match.at .results button { border-radius: 3px !important; border: 1px solid rgba(255,255,255,.22) !important; font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif; font-weight: 700 !important; font-size: 14px !important; text-transform: uppercase; height: 44px; }
+#view-match.at #event-grid .pad-grp:not(.filled) { text-transform: uppercase !important; letter-spacing: .08em !important; font-size: 10.5px !important; }
+#view-match.at #event-grid button.pb, #view-match.at #event-grid .pad-grp.filled, #view-match.at .board[data-lay="code"] #event-grid button.pb { font-weight: 650 !important; font-size: 13.5px !important; }
 
 </style>
 </head>
@@ -5257,7 +5273,7 @@ body { font-family: "Open Sans", -apple-system, "Segoe UI", Arial, sans-serif; }
     layout().forEach(function (it) { for (var r = it.r; r < it.r + it.h; r++) used[r] = 1; max = Math.max(max, it.r + it.h); });
     var tpl = []; for (var r = 0; r < max; r++) tpl.push(used[r] ? "minmax(0,1fr)" : "0px");
     grid.classList.add("at-fill"); grid.style.gridTemplateRows = tpl.join(" ");
-    var sp = grid.querySelectorAll("button.pb > span:not(.rs), .pad-grp > span"); for (var i = 0; i < sp.length; i++) sp[i].textContent = atCase(sp[i].textContent);
+    
     atResRow();
   };
   var atAdd = addTag; addTag = function () { var m = cur(); if (m) atUndo = { id: m.id, json: JSON.stringify(m) }; return atAdd.apply(this, arguments); };
