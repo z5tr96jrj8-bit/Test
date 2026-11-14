@@ -1617,7 +1617,7 @@ body { font-family: "Open Sans", -apple-system, "Segoe UI", Arial, sans-serif; }
 #view-panel > .panel-note { margin: 0 !important; padding: 6px 12px !important; font-size: 12px; color: #A9A9A9; border-bottom: 1px solid #1B1B1B; }
 #panel-host { flex: 1; min-height: 0; padding: 8px !important; overflow: hidden; }
 #panel-host > .events { height: 100%; display: grid !important; padding: 0 !important; margin: 0 !important; gap: 8px !important;
-  grid-template-columns: minmax(360px, 42%) minmax(0, 1fr) !important;
+  grid-template-columns: var(--at-panw, 32.5%) minmax(0, 1fr) !important;
   grid-template-rows: auto auto auto minmax(0, 1fr) !important;
   grid-template-areas: "head tools" "grid tools2" "grid hint" "grid props" !important; }
 #panel-host > .events > * { margin: 0 !important; min-width: 0; }
@@ -5086,6 +5086,7 @@ body { font-family: "Open Sans", -apple-system, "Segoe UI", Arial, sans-serif; }
     var vh = (W - pw - 2) / ar;
     if (vh > maxvh) { vh = maxvh; pw = Math.round(W - (vh * ar + 2)); }
     b.style.setProperty("--panw", pw + "px");
+    document.documentElement.style.setProperty("--at-panw", pw + "px");
     b.style.setProperty("--vidh", Math.floor(vh + 28) + "px");
   }
   function atApplyLay() { $("board").dataset.lay = String(at.lay); for (var i = 0; i < atLayBtns.length; i++) atLayBtns[i].classList.toggle("on", atLayBtns[i].dataset.lay === at.lay); for (var j = 0; j < atDockMode.length; j++) atDockMode[j].classList.toggle("on", atDockMode[j].dataset.lay === at.lay); if (at.lay === "ana" && currentTagId) { var rr = $("tl-rows").querySelector(".sel"); if (rr) setTimeout(function () { rr.scrollIntoView({ block: "nearest" }); }, 60); } var m = cur(); if (m) renderTimeline(m); atFit(); }
