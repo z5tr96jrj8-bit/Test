@@ -1375,7 +1375,7 @@ body { font-family: "Open Sans", -apple-system, "Segoe UI", Arial, sans-serif; }
 #view-match.at .board[data-lay="code"] { --lw: 150px; }
 #view-match.at .board[data-lay="code"] .timeline { --lw: 150px; }
 /* Page Analyse : pas de panel, grande vidéo, liste des codes, grande timeline pour trier */
-#view-match.at .board[data-lay="ana"] { grid-template-columns: minmax(0, 1fr) 270px !important; grid-template-rows: minmax(0, 1fr) auto minmax(220px, 46%) !important; grid-template-areas: "video bottom" "clock bottom" "timeline timeline" !important; }
+#view-match.at .board[data-lay="ana"] { grid-template-columns: minmax(0, 1fr) 250px !important; grid-template-rows: minmax(0, 1fr) auto clamp(170px, 29%, 270px) !important; grid-template-areas: "video bottom" "clock bottom" "timeline timeline" !important; }
 #view-match.at .board[data-lay="ana"]:not([data-mode="video"]) { grid-template-areas: "clock bottom" "clock bottom" "timeline timeline" !important; }
 #view-match.at .board[data-lay="ana"] > .events { display: none !important; }
 /* sélecteur de page */
