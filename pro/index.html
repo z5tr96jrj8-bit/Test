@@ -1645,6 +1645,11 @@ body { font-family: "Open Sans", -apple-system, "Segoe UI", Arial, sans-serif; }
 #panel-host #pp-team-row, #view-panel #pp-team-row { display: none !important; }
 #view-panel:not([hidden]) { overflow-x: hidden !important; } #panel-host .pad-props { overflow-x: hidden; }
 
+.at-pick { height: 22px; max-width: 190px; margin-left: 8px; padding: 0 7px 0 9px; border: 0; border-radius: 3px; background: #1A1A1A; color: #F2F2F2; display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; }
+.at-pick span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.at-pick:active { background: #111; }
+.pop button.dg { color: #FF9B9B; }
+
 </style>
 </head>
 <body>
@@ -5141,6 +5146,69 @@ body { font-family: "Open Sans", -apple-system, "Segoe UI", Arial, sans-serif; }
   var atLast = el("div", "at-last"); atLast.innerHTML = '<span class="l">Dernier tag</span><i class="sw"></i><b id="at-last-nm">Aucun</b><span class="tm" id="at-last-tm"></span><span class="sp"></span>';
   atLast.appendChild(atDelLast); $("clockbar").appendChild(atLast);
   $("events").insertBefore(atPH, $("events").firstChild);
+
+  /* ---- Plusieurs panels : bibliothèque enregistrée avec les matchs, le panel actif reste dans matches.panel ---- */
+  function atLib() {
+    var L = matches.panelLib;
+    if (!L || L.deleted || !Array.isArray(L.items) || !L.items.length) {
+      L = { id: "panelLib", kind: "panelLib", items: [{ id: uid("pl"), name: "Mon panel", buttons: [] }], updatedAt: 0 };
+      L.active = L.items[0].id;
+    }
+    if (!L.items.some(function (i) { return i.id === L.active; })) L.active = L.items[0].id;
+    return L;
+  }
+  function atActive(L) { for (var i = 0; i < L.items.length; i++) if (L.items[i].id === L.active) return L.items[i]; return L.items[0]; }
+  function atSnap() { return JSON.parse(JSON.stringify(layout())); }
+  function atLibSave(L) { L.updatedAt = Date.now(); matches.panelLib = L; saveLocal(); markDirty("panelLib"); }
+  function atLoadPanel(buttons) {
+    matches.panel = { id: "panel", kind: "panel", v: 4, h: 1, buttons: JSON.parse(JSON.stringify(buttons)), updatedAt: Date.now() };
+    layoutCache = { stamp: null, list: null };
+    saveLocal(); markDirty("panel");
+    padSel = null; renderAll(); atPanelName();
+  }
+  function atAskName(q, def) {
+    var n = window.prompt(q, def || ""); if (n === null) return null;
+    n = n.trim().slice(0, 30); return n || null;
+  }
+  function atSwitchPanel(id) {
+    var L = atLib(); if (id === L.active) return;
+    atActive(L).buttons = atSnap();
+    L.active = id; var t = atActive(L);
+    atLibSave(L); atLoadPanel(t.buttons && t.buttons.length ? t.buttons : defaultLayout(DEFAULT_EVENTS));
+    showToast("Panel « " + t.name + " »", false);
+  }
+  function atNewPanel(copy) {
+    var L = atLib(), cur0 = atActive(L);
+    var n = atAskName(copy ? "Nom de la copie :" : "Nom du nouveau panel :", copy ? cur0.name + " (copie)" : "Nouveau panel"); if (!n) return;
+    cur0.buttons = atSnap();
+    var it = { id: uid("pl"), name: n, buttons: copy ? atSnap() : defaultLayout(DEFAULT_EVENTS) };
+    L.items.push(it); L.active = it.id; atLibSave(L); atLoadPanel(it.buttons);
+    showToast("Panel « " + n + " » créé", false);
+  }
+  function atRenamePanel() {
+    var L = atLib(), a = atActive(L), n = atAskName("Nouveau nom du panel :", a.name); if (!n) return;
+    a.name = n; a.buttons = atSnap(); atLibSave(L); atPanelName();
+  }
+  function atDeletePanel() {
+    var L = atLib(); if (L.items.length < 2) { showToast("Il te faut au moins un panel.", false); return; }
+    var a = atActive(L); if (!window.confirm("Supprimer le panel « " + a.name + " » ? Tes tags déjà posés restent.")) return;
+    L.items = L.items.filter(function (i) { return i.id !== a.id; }); L.active = L.items[0].id;
+    var t = atActive(L); atLibSave(L); atLoadPanel(t.buttons && t.buttons.length ? t.buttons : defaultLayout(DEFAULT_EVENTS));
+    showToast("Panel supprimé. Panel actif : « " + t.name + " »", false);
+  }
+  var atPick = atBtn("at-pick", "", "Changer de panel", function () {
+    var L = atLib(), items = L.items.map(function (i) { return [(i.id === L.active ? "✓  " : "     ") + i.name, function () { atSwitchPanel(i.id); }]; });
+    items.push(["+  Nouveau panel", function () { atNewPanel(false); }]);
+    items.push(["Dupliquer ce panel", function () { atNewPanel(true); }]);
+    items.push(["Renommer ce panel", atRenamePanel]);
+    if (L.items.length > 1) items.push(["Supprimer ce panel", atDeletePanel, true]);
+    atPop(atPick, items);
+  });
+  function atPanelName() { var L = atLib(); atPick.innerHTML = "<span>" + atActive(L).name.replace(/[&<>]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]; }) + "</span>" + atIc("chevd", 13); atPick.title = L.items.length + " panel" + (L.items.length > 1 ? "s" : "") + " · changer de panel"; }
+  atPick.dataset.mmenu = "1"; atPH.insertBefore(atPick, atPH.querySelector(".sp"));
+  var atREp = renderEvents; renderEvents = function (m) { atREp(m); atPanelName(); };
+  atPanelName();
+  var atNote = document.querySelector("#view-panel .panel-note"); if (atNote) atNote.textContent = "Choisis le panel à modifier avec le menu à côté de « Panel ». Les changements sont enregistrés au fur et à mesure, et le panel choisi est celui que tu utilises pour coder.";
   var atVH = el("div", "at-dh"); atVH.innerHTML = 'Lecteur<small id="at-vn"></small><span class="sp"></span>';
   atVH.appendChild(atBtn("ib", atIc("photo", 15), "Capture d'image", atCapture)); atVH.appendChild(atBtn("ib", atIc("film", 15), "Changer la vidéo", function () { videoAction("pick"); })); atVH.appendChild(atBtn("ib", atIc("full", 15), "Plein écran", atFull));
   $("videobox").insertBefore(atVH, $("videobox").firstChild);
