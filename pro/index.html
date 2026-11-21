@@ -1650,13 +1650,14 @@ body { font-family: "Open Sans", -apple-system, "Segoe UI", Arial, sans-serif; }
 .at-pick:active { background: #111; }
 .pop button.dg { color: #FF9B9B; }
 /* Espacement de la première version de la nouvelle interface : 5 px entre boutons dans le codage */
-#view-match.at #event-grid.at-fill { gap: 4px !important; padding: 10px !important; }
+#view-match.at #event-grid.at-fill { gap: var(--atg, 2px) !important; padding: 8px !important; }
 #view-match.at #event-grid.at-fill > button.pb, #view-match.at #event-grid.at-fill > .pad-grp { margin: 0 !important; }
 #view-match.at #event-grid .pad-grp:not(.filled), #panel-host #event-grid .pad-grp:not(.filled) { justify-content: center !important; align-items: flex-end !important; padding-bottom: 2px !important; }
 #view-match.at #event-grid .pad-grp:not(.filled) span, #panel-host #event-grid .pad-grp:not(.filled) span { text-transform: uppercase !important; letter-spacing: .08em !important; font-size: 10.5px !important; color: #BDBDBD; }
 
 /* Bord par défaut seulement si le bouton n'a pas de bord choisi dans l'inspecteur */
 #event-grid button.pb:not([style*="border"]), #event-grid .pad-grp.filled:not([style*="border"]) { border: 1px solid rgba(255,255,255,.22); }
+#view-match.at #event-grid.at-fill { flex: 1 1 0 !important; height: 0; align-content: start !important; }
 
 </style>
 </head>
@@ -5383,6 +5384,17 @@ body { font-family: "Open Sans", -apple-system, "Segoe UI", Arial, sans-serif; }
     var cb = document.querySelector("#events .cur-box"); if (cb) cb.hidden = !!padEdit;
   }
   var atRC = renderCurrent; renderCurrent = function (m) { atRC(m); if (!panelMode && m && m.tags) atResRow(); };
+  /* Même rendu que la première interface (lignes de 4 px + 2 px d'écart), agrandi d'un seul facteur pour remplir la hauteur */
+  function atScalePad() {
+    var grid = $("event-grid"); if (!grid.classList.contains("at-fill")) return;
+    var max = +grid.dataset.rows || 1, cs = getComputedStyle(grid);
+    var avail = grid.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
+    if (avail <= 0) return;
+    var k = Math.max(0.6, (avail + PAD_GAP) / (max * (ROW_H + PAD_GAP)));
+    grid.style.setProperty("--atg", (PAD_GAP * k).toFixed(2) + "px");
+    grid.style.gridTemplateRows = "repeat(" + max + ", " + (ROW_H * k).toFixed(2) + "px)";
+  }
+  if (window.ResizeObserver) new ResizeObserver(function () { atScalePad(); }).observe($("event-grid"));
   var atRE = renderEvents;
   renderEvents = function (m) {
     atRE(m);
@@ -5391,10 +5403,8 @@ body { font-family: "Open Sans", -apple-system, "Segoe UI", Arial, sans-serif; }
     /* le panel occupe toute la hauteur : les lignes vides disparaissent, les autres se partagent la place */
     var used = [], max = 0;
     layout().forEach(function (it) { for (var r = it.r; r < it.r + it.h; r++) used[r] = 1; max = Math.max(max, it.r + it.h); });
-    var tpl = []; for (var r = 0; r < max; r++) tpl.push("minmax(0,1fr)");
-    grid.classList.add("at-fill"); grid.style.gridTemplateRows = tpl.join(" ");
-    
-    atResRow();
+    grid.classList.add("at-fill"); grid.dataset.rows = max;
+    atResRow(); atScalePad(); requestAnimationFrame(atScalePad);
   };
   var atAdd = addTag; addTag = function () { var m = cur(); if (m) atUndo = { id: m.id, json: JSON.stringify(m) }; return atAdd.apply(this, arguments); };
   var atST = showToast; showToast = function (t, w) { if (w && pendingUndo) atUndo = pendingUndo; atST(t, w); };
