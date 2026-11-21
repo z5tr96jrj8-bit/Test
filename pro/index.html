@@ -1649,6 +1649,11 @@ body { font-family: "Open Sans", -apple-system, "Segoe UI", Arial, sans-serif; }
 .at-pick span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .at-pick:active { background: #111; }
 .pop button.dg { color: #FF9B9B; }
+/* Espacement identique à la première version : 2 px entre boutons, proportions des lignes conservées */
+#view-match.at #event-grid, #panel-host #event-grid { gap: 2px !important; padding: 8px !important; }
+#view-match.at #event-grid > button.pb, #view-match.at #event-grid > .pad-grp, #panel-host #event-grid > button.pb, #panel-host #event-grid > .pad-grp, #view-match.at #event-grid.at-fill > * { margin: 0 !important; }
+#view-match.at #event-grid .pad-grp:not(.filled), #panel-host #event-grid .pad-grp:not(.filled) { justify-content: center !important; align-items: flex-end !important; padding-bottom: 2px !important; }
+#view-match.at #event-grid .pad-grp:not(.filled) span, #panel-host #event-grid .pad-grp:not(.filled) span { text-transform: uppercase !important; letter-spacing: .08em !important; font-size: 10.5px !important; color: #BDBDBD; }
 
 </style>
 </head>
@@ -5383,7 +5388,7 @@ body { font-family: "Open Sans", -apple-system, "Segoe UI", Arial, sans-serif; }
     /* le panel occupe toute la hauteur : les lignes vides disparaissent, les autres se partagent la place */
     var used = [], max = 0;
     layout().forEach(function (it) { for (var r = it.r; r < it.r + it.h; r++) used[r] = 1; max = Math.max(max, it.r + it.h); });
-    var tpl = []; for (var r = 0; r < max; r++) tpl.push(used[r] ? "minmax(0,1fr)" : "0px");
+    var tpl = []; for (var r = 0; r < max; r++) tpl.push("minmax(0,1fr)");
     grid.classList.add("at-fill"); grid.style.gridTemplateRows = tpl.join(" ");
     
     atResRow();
