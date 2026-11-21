@@ -1589,7 +1589,7 @@ body { font-family: "Open Sans", -apple-system, "Segoe UI", Arial, sans-serif; }
 #view-match.at #event-grid { gap: 5px !important; padding: 10px !important; }
 #view-match.at #event-grid.at-fill > * { margin: 0 !important; }
 #view-match.at #event-grid button.pb, #view-match.at #event-grid .pad-grp.filled {
-  border-radius: 3px !important; border: 1px solid rgba(255,255,255,.22) !important;
+  border-radius: 3px !important;
   font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif !important;
   font-size: 14px !important; font-weight: 700 !important; line-height: 1.12 !important; letter-spacing: .01em !important; text-transform: uppercase !important; padding: 2px 8px !important; }
 #view-match.at .board[data-lay="code"] #event-grid button.pb, #view-match.at .board[data-lay="code"] #event-grid .pad-grp.filled { font-size: 14px !important; line-height: 1.12 !important; }
@@ -1605,7 +1605,7 @@ body { font-family: "Open Sans", -apple-system, "Segoe UI", Arial, sans-serif; }
 #view-match.at #event-grid { gap: 2px !important; }
 #view-match.at #event-grid > button.pb, #view-match.at #event-grid > .pad-grp.filled, #panel-host #event-grid > button.pb, #panel-host #event-grid > .pad-grp.filled, #panel-host .event-grid > button.pb, #panel-host .event-grid > .pad-grp.filled { margin: 1.5px !important; }
 #panel-host .event-grid button.pb, #panel-host .event-grid .pad-grp.filled {
-  border-radius: 3px !important; border: 1px solid rgba(255,255,255,.22) !important;
+  border-radius: 3px !important;
   font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif !important;
   font-size: 13.5px !important; font-weight: 650 !important; text-transform: uppercase !important; letter-spacing: .01em !important; }
 #panel-host .event-grid button.pb span:not(.rs), #panel-host .event-grid .pad-grp.filled span { text-transform: uppercase !important; text-shadow: 0 1px 2px rgba(0,0,0,.35) !important; }
@@ -1654,6 +1654,9 @@ body { font-family: "Open Sans", -apple-system, "Segoe UI", Arial, sans-serif; }
 #view-match.at #event-grid.at-fill > button.pb, #view-match.at #event-grid.at-fill > .pad-grp { margin: 0 !important; }
 #view-match.at #event-grid .pad-grp:not(.filled), #panel-host #event-grid .pad-grp:not(.filled) { justify-content: center !important; align-items: flex-end !important; padding-bottom: 2px !important; }
 #view-match.at #event-grid .pad-grp:not(.filled) span, #panel-host #event-grid .pad-grp:not(.filled) span { text-transform: uppercase !important; letter-spacing: .08em !important; font-size: 10.5px !important; color: #BDBDBD; }
+
+/* Bord par défaut seulement si le bouton n'a pas de bord choisi dans l'inspecteur */
+#event-grid button.pb:not([style*="border"]), #event-grid .pad-grp.filled:not([style*="border"]) { border: 1px solid rgba(255,255,255,.22); }
 
 </style>
 </head>
