@@ -65,12 +65,12 @@ v3/
 | `corrections` | id | Chaque acceptation / rejet / correction d'une suggestion → précision par module |
 | `settings` | clé | Raccourcis, séparateur CSV, zoom, synchro (désactivée par défaut) |
 
-Les tags sont stockés un par un (et non tout le match d'un bloc) : sauvegarde instantanée même avec 500+ tags.
+Ajusté à l'étape 3 : un document par match (tags inclus), réécrit seul quand il change, regroupé toutes les 150 ms. Mesuré : 2 000 tags dans un match restent fluides (voir 03-reconstruction.md).
 
 **Migration de l'existant** : au premier lancement, si l'ancien stockage (`carnet-de-tags.v1`) est présent sur le même site, il est copié automatiquement. Sinon (nouvelle adresse Netlify, iPad), import du fichier « Tout sauvegarder ». L'import v3 reprend **tout** : matchs avec leur date de création, tags, projets, clips gardés, bibliothèque de panels, listes. Un rapport d'import affiche les nombres (ex. « 6 matchs, 488 tags, 2 projets, 3 panels ») avant de valider.
 
 ## 4. Performance (500+ tags)
-- **Timeline** : les blocs sont dessinés sur un `<canvas>` (une seule surface, quel que soit le nombre de tags) ; les noms de lignes restent en HTML. Seule la partie visible est dessinée.
+- **Timeline** : étape 3, en HTML (mesuré ci-dessous) ; passage au `<canvas>` à l'étape 4 si les mesures sur iPad le demandent.
 - Listes longues (codes, derniers tags, Review) : n'affichent que les lignes visibles.
 - Redessin ciblé : ajouter un tag ne redessine que la piste et le compteur concernés.
 - Objectif mesuré à l'étape 3 : < 16 ms par ajout de tag avec 2 000 tags sur iPad.
@@ -79,7 +79,7 @@ Les tags sont stockés un par un (et non tout le match d'un bloc) : sauvegarde i
 Chaque action (ajouter, supprimer, déplacer, rogner, couper un clip, changer résultat / zone / note, changer de période, modifier le panel) est une « commande » réversible. ⌘Z / Ctrl+Z annule, ⇧⌘Z / Ctrl+Y rétablit, boutons dans la barre d'outils. Le toast « Annuler » actuel est gardé.
 
 ## 6. Raccourcis clavier (par défaut, modifiables dans Réglages)
-Les touches sont repérées par leur **position** sur le clavier : elles marchent en AZERTY comme en QWERTY.
+Les lettres et la ponctuation sont reconnues par le caractère tapé (AZERTY comme QWERTY), les chiffres par leur position (1 à 4 sans Maj en AZERTY). Inactifs pendant la saisie dans un champ.
 
 | Action | Défaut |
 |---|---|

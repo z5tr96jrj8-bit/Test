@@ -148,8 +148,9 @@ export function renderMatch() {
 /* Tout ce qui dépend des tags ou de la sélection */
 function renderTagViews(m) {
   const list = layout();
-  renderCurrent(m); renderLast(m); renderCodes(m); renderTimeline(m); renderLists(m);
-  renderSelBox(m); renderLastStrip(m);
+  renderCurrent(m); renderLastStrip(m);
+  if (at().lay === "code") { renderSeekMarks(m, list, function (t) { return shown(m, t); }); return; } /* le reste est caché en page Codage */
+  renderLast(m); renderCodes(m); renderTimeline(m); renderLists(m); renderSelBox(m);
   renderSeekMarks(m, list, function (t) { return shown(m, t); });
   if (AT.tab === "sum") renderSummary(m);
 }

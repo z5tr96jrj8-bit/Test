@@ -28,13 +28,13 @@ export const ACTIONS = [
   ["pageAna", "Page Analyse", "Alt+Digit2"]
 ];
 const LEFT = "azertyuio", RIGHT = "qsdfghjklm", EXTRA = "wxcvb";
-const NAMED = { Space: 1, ArrowLeft: 1, ArrowRight: 1, ArrowUp: 1, ArrowDown: 1, Backspace: 1, Delete: 1, Enter: 1, Escape: 1, Tab: 1, Home: 1, End: 1, PageUp: 1, PageDown: 1 };
+const KEY_NAMES = { Space: 1, ArrowLeft: 1, ArrowRight: 1, ArrowUp: 1, ArrowDown: 1, Backspace: 1, Delete: 1, Enter: 1, Escape: 1, Tab: 1, Home: 1, End: 1, PageUp: 1, PageDown: 1 };
 
 export function comboOf(e) {
   let k, shiftCounts = true;
   if (/^(Digit|Numpad)\d$/.test(e.code)) k = "Digit" + e.code.slice(-1);
   else if (e.code === "Space" || e.key === " ") k = "Space";
-  else if (NAMED[e.key]) k = e.key;
+  else if (KEY_NAMES[e.key]) k = e.key;
   else if (/^F\d{1,2}$/.test(e.key)) k = e.key;
   else if (e.key && e.key.length === 1) { k = e.key.toLowerCase(); if (!/[a-zà-ÿ]/.test(k)) shiftCounts = false; }
   else return null;
