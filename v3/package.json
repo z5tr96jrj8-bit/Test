@@ -1,0 +1,10 @@
+{
+  "name": "rl-analysis",
+  "version": "3.0.0-alpha",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test tests/",
+    "build": "node tools/build.mjs"
+  }
+}
