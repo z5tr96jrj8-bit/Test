@@ -126,3 +126,14 @@ Pendant les deux phases, la v1 reste en ligne et intacte. La v2 est publiée dan
 - [ ] Valider l'arborescence et le modèle de données ci-dessus.
 - [ ] Valider la recommandation sur la synchronisation (§ 6).
 - [ ] Valider la publication de la v2 dans `v2/` sur le même site pendant les essais.
+
+## 10. Ajustements après lecture d'une vraie sauvegarde v1
+
+Une sauvegarde réelle (6 matchs codés, 488 tags, 2 panels) a été analysée hors du dépôt. Constats :
+
+1. **Les colonnes ne désignent pas l'équipe à domicile et l'équipe à l'extérieur.** Dans les données, `team: "home"` veut dire « équipe analysée avec ballon » et `team: "away"` « équipe analysée sans ballon », que l'équipe analysée joue à domicile ou à l'extérieur. La v2 enregistre donc deux informations distinctes : l'**équipe analysée** (choisie dans le projet) et la **phase** (avec ou sans ballon). La migration convertit `home` en `with ball` et `away` en `without ball`.
+2. **Le bug du renommage se produit déjà dans ces données** : le panel actif est le panel par défaut (« 2 »). Les tags enregistrés avec « Mon panel » s'affichent donc sous d'autres noms (par exemple « OFF TRANSITION » apparaît comme « Pressing »). La migration se base sur le **nom enregistré dans chaque tag** (`lbl`) et sur « Mon panel ».
+3. **Aucun repère de mi-temps n'a été placé** : tous les tags sont en 1re mi-temps. Le filtre par mi-temps demandera de placer le coup d'envoi et le début de la 2e mi-temps, en deux touchers. Un rappel s'affichera.
+4. **Le score se déduit des boutons GOAL et GOAL CONCEDED**, pas d'un résultat « But ». La v2 permet de choisir, dans le panel, le rôle d'un bouton (but pour, but contre, occasion…).
+5. Un projet référence 4 matchs supprimés : la migration nettoie ces références.
+6. Volume : environ 0,2 Ko par tag. La limite de 5 Mo de la v1 serait atteinte vers 100 matchs codés, soit à peu près une saison.
