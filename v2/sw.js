@@ -1,6 +1,6 @@
 /* Cache hors ligne : l'application s'ouvre sans réseau (au stade).
    Stratégie « réseau d'abord, cache en secours » : une nouvelle version est prise dès qu'il y a du réseau. */
-const CACHE = "rl2-v1";
+const CACHE = "rl2-v2";
 self.addEventListener("install", (e) => { self.skipWaiting(); });
 self.addEventListener("activate", (e) => { e.waitUntil(caches.keys().then((ks) => Promise.all(ks.filter((k) => k !== CACHE).map((k) => caches.delete(k)))).then(() => self.clients.claim())); });
 self.addEventListener("fetch", (e) => {

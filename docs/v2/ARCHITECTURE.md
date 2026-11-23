@@ -1,5 +1,11 @@
 # RL Analysis v2 : architecture proposée (étape 2)
 
+> **Mise à jour (2.0.1)** : à la demande de l'utilisateur, la v2 reprend exactement l'interface de la v1.
+> Le découpage en modules ci-dessous a été remplacé : la v2 = HTML et CSS de la v1, `js/storage.js` (IndexedDB)
+> et `js/app.js` (code de la v1 + améliorations marquées « v2 : »). Voir CHANGELOG.md. Les colonnes « avec / sans ballon »
+> et le modèle de panel pré-rempli ont été abandonnés.
+
+
 Décisions validées : audit OK ; interface en anglais avec le français en option ; iPad en priorité, ordinateur aussi.
 Point en attente : la synchronisation en ligne (voir § 6, recommandation : la garder, en l'améliorant).
 
