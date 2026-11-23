@@ -1,0 +1,28 @@
+/* Jetons de design : une seule source pour les couleurs, tailles et espacements.
+   L'outil est sombre par choix (salle vidéo, iPad le soir au stade). */
+:root {
+  color-scheme: dark;
+  --bg: #111317;
+  --surface: #181B20;
+  --surface-2: #1F232A;
+  --surface-3: #282D35;
+  --line: #2C313A;
+  --line-2: #3A404B;
+  --ink: #ECEEF1;
+  --muted: #9AA2AE;
+  --accent: #3B82F6;
+  --accent-ink: #FFFFFF;
+  --danger: #EF4444;
+  --warn: #EAB308;
+  --ok: #22C55E;
+  --with: #3B6FE0;
+  --without: #DC3C41;
+  --radius: 8px;
+  --radius-s: 4px;
+  --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --tap: 40px;
+  --gap: 8px;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg: #111317; } }
+:root[data-theme="dark"] { --bg: #111317; }
