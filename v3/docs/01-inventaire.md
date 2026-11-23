@@ -184,3 +184,11 @@ Ton panel réel (et ta bibliothèque de panels) est dans tes données : il sera 
 5. **Équipe des tags** : chaque tag porte Domicile / Extérieur via son bouton, mais l'équipe ne se règle plus dans l'interface. Pour les stats « For / Against » et « Home / Away », il faut savoir **quelle est ton équipe** dans chaque match. Je propose : un champ « Mon équipe » sur le projet (ex. Rennes) + l'équipe réglable sur chaque bouton. D'accord ?
 6. **Tes données réelles** : envoie-moi ton fichier « Tout sauvegarder » (6 matchs, 488 tags) pour que je teste l'import sans perte. Rien ne sera publié.
 7. **Captures de l'interface actuelle** : peux-tu les renvoyer ? Elles me serviront pour l'avant / après.
+
+## 10. Décisions (réponses du 23/11/2026)
+1. Synchro en ligne : **gardée, en option, désactivée par défaut**.
+2. Thème : **sombre uniquement**.
+3. Raccourcis clavier : **ajoutés et modifiables dans les réglages** (lecture, ±5 s, coder, résultats, accepter / rejeter).
+4. Listes de lecture : **le code fonctionne** (testé : création, ajout d'un clip, lecture activée) → **réactivées**.
+5. **« Mon équipe »** sur chaque projet + **équipe réglable sur chaque bouton**.
+6. Fichier « Tout sauvegarder » et captures : à recevoir.
