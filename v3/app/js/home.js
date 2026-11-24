@@ -10,6 +10,7 @@ import { vsMeta, vsRemove, vsTotal } from "./videostore.js";
 import { Y, syncOn, syncLabel } from "./sync.js";
 import { estimateDocsSize, flush } from "./store.js";
 import { loadVideoFile } from "./player.js";
+import { createDemo, DEMO_ID } from "./demo.js";
 
 let homeScreen = "menu", prTab = null, pendingVideo = null, pjEditing = null;
 
@@ -227,6 +228,7 @@ function applyImport() {
 export function initHome() {
   $("go-new").addEventListener("click", function () { showHome("new"); });
   $("go-projects").addEventListener("click", function () { showHome("projects"); });
+  $("go-demo").addEventListener("click", function () { createDemo(); S.pjId = "pdemo0000001"; App.openMatch(DEMO_ID); toast("Match d'exemple : tags fictifs. Tu peux le supprimer depuis Mes projets.", false); });
   $("go-panel").addEventListener("click", function () { App.openPanelEditor(); });
   $("view-home").addEventListener("click", function (e) { const b = e.target.closest("[data-home]"); if (b) showHome(b.dataset.home); });
   $("btn-settings").addEventListener("click", function () { App.openSettings("keys"); });

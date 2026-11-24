@@ -50,6 +50,8 @@ input[type="date"] { -webkit-appearance: none; appearance: none; }
 .hero-link:active { background: var(--panel-2); }
 .hero-link .ht { font-size: var(--fs-l); font-weight: 600; }
 .hero-link svg { color: var(--text-2); }
+.demo-link { margin-top: 12px; height: 40px; padding: 0 14px; border: 1px dashed var(--line); border-radius: var(--r2); color: var(--text-2); }
+.demo-link:active { color: var(--text); border-color: var(--text-2); }
 .store-bar { margin-top: 12px; display: grid; gap: 6px; max-width: 420px; }
 .store-text { font: 500 var(--fs-xs) var(--mono); color: var(--text-2); }
 .store-track { height: 3px; background: var(--panel-2); }

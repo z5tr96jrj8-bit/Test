@@ -58,6 +58,14 @@ function saveState(ok) {
   el.textContent = ok === false ? "Erreur d'enregistrement : fais « Tout sauvegarder »" : (Y.state !== "off" ? "Enregistré · " + ({ syncing: "synchro en cours", synced: "synchronisé", error: "synchro en attente" }[Y.state] || "") : "Enregistré automatiquement");
 }
 
+/* ---------- Hors ligne (adresse en ligne uniquement ; pas depuis un fichier) ---------- */
+function registerOffline() {
+  if (!("serviceWorker" in navigator) || !/^https?:$/.test(location.protocol)) return;
+  const had = !!navigator.serviceWorker.controller;
+  navigator.serviceWorker.addEventListener("controllerchange", function () { if (had) toast("Nouvelle version installée : ferme puis rouvre l'appli pour l'utiliser.", false); });
+  navigator.serviceWorker.register("sw.js").catch(function () {});
+}
+
 /* ---------- Démarrage ---------- */
 openStore().then(function () { return Promise.all([loadAllDocs(), loadKV()]); }).then(function (r) {
   S.docs = r[0]; S.kv = r[1];
@@ -92,6 +100,7 @@ function start() {
   window.addEventListener("beforeunload", function (e) { if (hasPending()) { flush(); } });
   try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(function () {}); } catch (e) {}
   saveState(true);
+  registerOffline();
   showHome("menu");
   initSync();
 }

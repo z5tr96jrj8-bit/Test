@@ -70,5 +70,20 @@ const SITE = path.join(DIST, "site");
 fs.rmSync(SITE, { recursive: true, force: true });
 fs.cpSync(APP, SITE, { recursive: true });
 
+/* Service worker : liste exacte des fichiers + version = empreinte du contenu (une mise à jour change la version) */
+import crypto from "node:crypto";
+const files = [];
+(function walk(d) { fs.readdirSync(d, { withFileTypes: true }).forEach(function (e) { const f = path.join(d, e.name); if (e.isDirectory()) walk(f); else files.push(path.relative(SITE, f).split(path.sep).join("/")); }); })(SITE);
+const cacheable = files.filter(function (f) { return f !== "sw.js" && f !== "_headers"; }).sort();
+const hash = crypto.createHash("sha256"); cacheable.forEach(function (f) { hash.update(f); hash.update(fs.readFileSync(path.join(SITE, f))); });
+const version = hash.digest("hex").slice(0, 12);
+let sw = fs.readFileSync(path.join(SITE, "sw.js"), "utf8");
+sw = sw.replace('const VERSION = "dev";', 'const VERSION = "' + version + '";').replace(/const FILES = \[.*\];/, function () { return "const FILES = " + JSON.stringify(["./"].concat(cacheable)) + ";"; });
+fs.writeFileSync(path.join(SITE, "sw.js"), sw);
+fs.writeFileSync(path.join(DIST, "VERSION.txt"), version + "\n");
+
+/* Zip du site (index.html à la racine) : se dépose tel quel sur Netlify / Cloudflare */
+try { const { execSync } = await import("node:child_process"); fs.rmSync(path.join(DIST, "RL-Analysis-site.zip"), { force: true }); execSync("zip -qr ../RL-Analysis-site.zip .", { cwd: SITE }); } catch (e) { console.log("(zip non créé : commande « zip » absente)"); }
+
 console.log("dist/RL-Analysis.html : " + Math.round(html.length / 1024) + " Ko, " + order.length + " modules (" + order.join(", ") + ")");
-console.log("dist/site/ : dossier à déposer tel quel");
+console.log("dist/site/ : dossier à déposer tel quel (version " + version + ", " + cacheable.length + " fichiers hors ligne)");
