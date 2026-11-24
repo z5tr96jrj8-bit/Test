@@ -22,7 +22,7 @@ Les vidéos déjà gardées sur l'appareil par la v1 sont réutilisées (sans no
 Identique à la v1. Différences :
 - **Panel vierge** au départ : vous créez vos propres boutons (Modifier le panel → Ajouter un bouton).
 - **Édition → Annuler / Rétablir** : jusqu'à 100 actions.
-- Pas de connexion ni de synchronisation en ligne : tout reste sur l'appareil. Pensez à **Tout sauvegarder** régulièrement.
+- **Synchronisation en ligne** (icône en haut à droite de l'accueil) : connectez-vous une fois par appareil avec votre e-mail. Seul le codage est envoyé, jamais les vidéos. Les données en ligne de la v2 sont séparées de celles de la v1.
 
 ## Fichiers
 

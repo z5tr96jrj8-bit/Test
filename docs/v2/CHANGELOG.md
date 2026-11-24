@@ -23,8 +23,8 @@ Une comparaison pixel par pixel des écrans v1 / v2 (mêmes données, même vid�
 - Après un import, le panel actif est celui qui correspond à vos tags.
 
 ### Données
-- Les données de la v2 sont **séparées** de celles de la v1. La v1 continue de fonctionner comme avant.
-- La synchronisation en ligne est désactivée dans la v2 : sinon, les deux versions écriraient dans la même base en ligne. L'icône de connexion de l'accueil est donc masquée.
+- Les données de la v2 sont **séparées** de celles de la v1 sur l'appareil. La v1 continue de fonctionner comme avant.
+- **Synchronisation en ligne rétablie** (même base Supabase, même connexion par e-mail). Pour ne jamais écraser la v1, la v2 range ses documents en ligne sous un préfixe `v2:` : elle ne lit pas les données en ligne de la v1, et la v1 ne voit pas celles de la v2. La session de connexion de la v2 est aussi distincte : il faut se connecter une fois dans la v2.
 
 ## 2.0.0-phase3 (remplacée)
 Première v2 avec une interface redessinée. Elle a été remplacée par la 2.0.1 à votre demande.

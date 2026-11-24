@@ -301,7 +301,7 @@
       error: "Enregistré sur cet appareil, sauvegarde en attente"
     }[cloudState];
     $("sync-home").textContent = txt;
-    var sl = $("sync-line"); if (sl) sl.textContent = sync && cloud ? txt : "Enregistré sur cet appareil.";
+    var sl = $("sync-line"); if (sl) sl.textContent = sync && cloud ? txt : "Enregistré sur cet appareil uniquement. Touche l’icône de connexion sur l’accueil pour relier tes appareils.";
     var sb = $("btn-sync"); if (sb) { var son = !!(sync && cloud); sb.classList.toggle("on", son); sb.setAttribute("aria-label", son ? "Connexion et synchronisation (connecté)" : "Connexion et synchronisation (non connecté)"); }
     var prs = $("pr-sync"); if (prs) prs.textContent = txt;
   }
@@ -2852,7 +2852,7 @@
   try { var d = new Date(); $("f-date").value = d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()); } catch (e) {}
   showHome("menu");
   setInterval(renderClock, 250);
-  /* v2 : pas de synchronisation en ligne (version à part, tout reste sur l'appareil). */
+  initCloud();
   /* Version autonome : les fichiers sont remis directement au navigateur. */
   var MIME = { csv: "text/csv;charset=utf-8", json: "application/json", mp4: "video/mp4", webm: "video/webm" };
   downloads = { save: function (r) {
@@ -2880,7 +2880,11 @@
   });
 
   /* ============ Synchronisation en ligne, facultative (base Supabase de l'utilisateur) ============ */
-  var SYNC_KEY = "carnet-de-tags.sync";
+  /* v2 : session de connexion propre à la v2 (la v1 garde la sienne). */
+  var SYNC_KEY = "rl2.sync";
+  /* v2 : les documents en ligne de la v2 sont rangés sous le préfixe « v2: » dans la même table :
+     la v2 ne lit ni n'écrase jamais les données en ligne de la v1, et inversement. */
+  var CLOUD_PREFIX = "v2:";
   /* Base du propriétaire de ce site. La clé « publishable » est faite pour être publique : l'accès aux données dépend du compte et des règles de la base. */
   var SYNC_DEFAULT = { url: "https://ywsxfikvjaxlwtzpogck.supabase.co", key: "sb_publishable_hgZrsWt9l1R2LaE78y_vaQ_7oykggbZ" };
   var sync = null;   // { url, key, email, refresh, access, exp }
@@ -2938,15 +2942,16 @@
       doc: function (id) {
         return { set: function (body) {
           return sbFetch("carnet_docs?on_conflict=user_id,id", { method: "POST", headers: { Prefer: "resolution=merge-duplicates,return=minimal" },
-            body: JSON.stringify([{ id: id, body: body, updated_at: Number(body.updatedAt) || Date.now() }]) })
+            body: JSON.stringify([{ id: CLOUD_PREFIX + id, body: body, updated_at: Number(body.updatedAt) || Date.now() }]) })
             .then(function (r) { if (!onlineSizes) onlineSizes = {}; onlineSizes[id] = byteSize(body); renderStore(); return r; }).catch(syncLost);
         } };
       },
       limit: function () { return this; },
       get: function () {
         return sbFetch("carnet_docs?select=id,body").then(function (rows) {
-          onlineSizes = {}; (rows || []).forEach(function (r) { onlineSizes[r.id] = byteSize(r.body); }); renderStore();
-          return { docs: (rows || []).map(function (r) { return { id: r.id, data: function () { return r.body; } }; }) };
+          rows = (rows || []).filter(function (r) { return typeof r.id === "string" && r.id.indexOf(CLOUD_PREFIX) === 0; });
+          onlineSizes = {}; rows.forEach(function (r) { onlineSizes[r.id.slice(CLOUD_PREFIX.length)] = byteSize(r.body); }); renderStore();
+          return { docs: rows.map(function (r) { return { id: r.id.slice(CLOUD_PREFIX.length), data: function () { return r.body; } }; }) };
         }).catch(syncLost);
       }
     };
@@ -2998,7 +3003,7 @@
   setInterval(function () { if (!currentMatchId && !panelMode && document.visibilityState === "visible") pullIfIdle(); }, 30000);
   try {
     var so = JSON.parse(localStorage.getItem(SYNC_KEY) || "null");
-    void so;
+    if (so && so.url && so.key && so.refresh) { sync = so; cloud = makeCloud(); pull(); }
   } catch (e) {}
   renderSync();
 
