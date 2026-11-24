@@ -249,6 +249,12 @@
       </div>
     </section>
 
+    <section class="pane seq" id="seq" aria-label="Séquence en cours">
+      <div class="at-dh"><span>Séquence en cours</span><small>détails du dernier tag</small></div>
+      <div class="seq-body" id="seq-body"></div>
+      <div class="recent" id="recent"></div>
+    </section>
+
     <div class="clockbar" id="clockbar">
       <div class="at-seek" id="at-seek"><span class="tr"></span><span class="pr" id="at-seek-pr"></span><span id="at-seek-mk"></span><span class="kn" id="at-seek-kn"></span></div>
       <div class="clock-controls" id="clock-controls"></div>
@@ -299,14 +305,14 @@
 
     <div class="pane bottom" id="bottom" data-tab="codes">
       <div class="at-sh"><svg class="ic sm"><use href="#i-funnel"/></svg>Filtre</div>
-      <button class="at-tg" id="at-star-filter" type="button" title="N'afficher que les clips gardés"><svg class="ic xs gold"><use href="#i-star"/></svg>Gardés</button>
+      <div class="filters" id="at-filters"><button type="button" data-f="all" class="on">Tous</button><button type="button" data-f="home"></button><button type="button" data-f="away"></button><button type="button" data-f="star" id="at-star-filter" title="N'afficher que les clips gardés"><svg class="ic xs gold"><use href="#i-star"/></svg>Gardés</button></div>
       <div class="at-sh"><svg class="ic sm"><use href="#i-gear"/></svg>Paramètres<span class="sp"></span><span class="ct" id="at-count"></span></div>
       <div class="at-tabs" id="at-tabs">
-        <button type="button" data-t="cur" title="Zone et note du clip" aria-label="Zone et note du clip"><svg class="ic sm"><use href="#i-selbox"/></svg></button>
-        <button type="button" data-t="codes" title="Codes" aria-label="Codes"><svg class="ic sm"><use href="#i-tag"/></svg></button>
-        <button type="button" data-t="last" title="Derniers tags" aria-label="Derniers tags"><svg class="ic sm"><use href="#i-clock"/></svg></button>
-        <button type="button" data-t="sum" title="Bilan" aria-label="Bilan"><svg class="ic sm"><use href="#i-layers"/></svg></button>
-        <button type="button" data-t="lists" title="Listes de lecture" aria-label="Listes de lecture"><svg class="ic sm"><use href="#i-list"/></svg></button>
+        <button type="button" data-t="cur" title="Zone et note du clip"><svg class="ic"><use href="#i-selbox"/></svg>Séquence</button>
+        <button type="button" data-t="codes" title="Codes"><svg class="ic"><use href="#i-tag"/></svg>Codes</button>
+        <button type="button" data-t="last" title="Derniers tags"><svg class="ic"><use href="#i-clock"/></svg>Derniers</button>
+        <button type="button" data-t="sum" title="Bilan"><svg class="ic"><use href="#i-layers"/></svg>Bilan</button>
+        <button type="button" data-t="lists" title="Listes de lecture"><svg class="ic"><use href="#i-list"/></svg>Listes</button>
       </div>
       <div class="tabp at-codes" data-p="codes" id="at-codes"></div>
       <div class="tabp" data-p="cur" id="current">

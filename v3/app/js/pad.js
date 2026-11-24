@@ -15,6 +15,8 @@ export function renderPad(m) {
   const keys = buttonKeys(list);
   const ct = S.currentTagId && m && m.tags ? m.tags.filter(function (t) { return t.id === S.currentTagId; })[0] : null;
   const ctBtn = ct ? tagButton(ct, list) : null;
+  const counts = {};
+  if (m && m.tags && !S.padEdit) m.tags.forEach(function (t) { if (t.status && t.status !== "accepted") return; const b = t.btn && itemIn(list, t.btn) ? itemIn(list, t.btn) : tagButton(t, list); if (b) counts[b.id] = (counts[b.id] || 0) + 1; });
   grid.textContent = "";
   grid.classList.toggle("editing", S.padEdit);
   let maxRow = 0;
@@ -29,6 +31,8 @@ export function renderPad(m) {
       node.type = "button";
       paint(node, it.color, it.pat, it.bd, it.bw);
       node.appendChild(el("span", "", it.label));
+      if (!S.padEdit && keys[it.id]) node.appendChild(el("span", "k", labelOf(keys[it.id])));
+      if (!S.padEdit && counts[it.id]) node.appendChild(el("span", "c", String(counts[it.id])));
       node.setAttribute("aria-label", it.label + (keys[it.id] ? " (touche " + labelOf(keys[it.id]) + ")" : ""));
       if (keys[it.id]) node.title = "Touche " + labelOf(keys[it.id]);
       if (!S.padEdit) node.disabled = !canTag;

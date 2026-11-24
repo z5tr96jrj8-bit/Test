@@ -129,6 +129,7 @@ export function renderMatch() {
   $("sc-teams").textContent = m.home + " – " + m.away; $("sc-proj").textContent = a ? a.name : "";
   $("board").dataset.mode = isVideo(m) ? "video" : "live";
   $("board").dataset.lay = at().lay === "ana" ? "ana" : "code";
+  placeCurrent($("board").dataset.lay);
   const mode = $("at-mode").children; for (let i = 0; i < mode.length; i++) mode[i].classList.toggle("on", mode[i].dataset.lay === $("board").dataset.lay);
   const loading = V.loadingStored === m.id;
   $("video-ask").hidden = !isVideo(m) || V.ready;
@@ -143,18 +144,20 @@ export function renderMatch() {
   renderTagViews(m);
   renderSummary(m);
   renderHistoryButtons();
+  renderFilters(m);
   requestAnimationFrame(fit);
 }
 /* Tout ce qui dépend des tags ou de la sélection */
 function renderTagViews(m) {
   const list = layout();
   renderCurrent(m); renderLastStrip(m);
+  renderRecent(m);
   if (at().lay === "code") { renderSeekMarks(m, list, function (t) { return shown(m, t); }); return; } /* le reste est caché en page Codage */
   renderLast(m); renderCodes(m); renderTimeline(m); renderLists(m); renderSelBox(m);
   renderSeekMarks(m, list, function (t) { return shown(m, t); });
   if (AT.tab === "sum") renderSummary(m);
 }
-function renderAfterTags() { const m = cur(); if (!m) return; renderPad(m); renderTagViews(m); renderHistoryButtons(); }
+function renderAfterTags() { const m = cur(); if (!m) return; renderPad(m); renderTagViews(m); renderHistoryButtons(); renderFilters(m); }
 export function renderSelection() { renderAfterTags(); }
 
 function renderResults(m) {
@@ -205,11 +208,13 @@ function renderCodes(m) {
   let total = 0; box.textContent = "";
   const frag = document.createDocumentFragment();
   rows.forEach(function (r) {
+    if (AT.tlFilter.team !== "all" && r.team && r.team !== AT.tlFilter.team) return;
     const tags = r.tags.filter(function (t) { return shown(m, t); }); total += tags.length;
     const sel = !!(ct && r.tags.indexOf(ct) >= 0);
     const d = el("div", "pr" + (sel ? " sel" : "")); d.dataset.k = r.key;
     d.innerHTML = '<svg class="ic xs"><use href="#i-' + (AT.open === r.key ? "chevd" : "chevr") + '"/></svg><span class="ck">' + (hidden[r.key] ? "" : '<svg class="ic xs"><use href="#i-check"/></svg>') + '</span><span class="pill">' + tags.length + "</span>";
     d.appendChild(el("span", "nm", sentence(r.label)));
+    if (r.team) d.appendChild(el("span", "chip " + r.team, r.team === "away" ? m.away : m.home));
     const sw = el("i", "sw"); sw.style.background = r.color; d.appendChild(sw);
     frag.appendChild(d);
     if (AT.open === r.key) {
@@ -225,7 +230,31 @@ function renderCodes(m) {
   });
   box.appendChild(frag);
   $("at-count").textContent = total + (total > 1 ? " tags" : " tag");
-  $("at-star-filter").classList.toggle("on", AT.star);
+}
+function renderRecent(m) {
+  const box = $("recent"), list = layout(); box.textContent = "";
+  box.appendChild(el("span", "lab", "Derniers"));
+  m.tags.slice(-6).reverse().forEach(function (t) {
+    const it = el("button", "it"); it.type = "button"; it.dataset.select = t.id;
+    const sw = el("i"); sw.style.background = tagColor(t, list); it.appendChild(sw);
+    it.appendChild(el("span", "mono", fmt(matchTime(t.p, t.t)))); it.appendChild(el("b", "", sentence(tagLabel(t, list))));
+    if (t.res) it.appendChild(el("span", "r", t.res));
+    box.appendChild(it);
+  });
+  if (!m.tags.length) box.appendChild(el("span", "r", "Aucun tag pour l'instant"));
+}
+function renderFilters(m) {
+  const f = $("at-filters").children;
+  for (let i = 0; i < f.length; i++) {
+    const k = f[i].dataset.f;
+    if (k === "home") f[i].textContent = m.home; else if (k === "away") f[i].textContent = m.away;
+    f[i].classList.toggle("on", k === "star" ? AT.star : (k === AT.tlFilter.team && !AT.star) || (k === "all" && AT.tlFilter.team === "all" && !AT.star));
+  }
+}
+function placeCurrent(lay) {
+  const cu = $("current"), host = lay === "code" ? $("seq-body") : $("bottom");
+  if (cu.parentNode === host) return;
+  if (lay === "code") host.appendChild(cu); else host.insertBefore(cu, host.querySelector('.tabp[data-p="last"]'));
 }
 function renderSelBox(m) {
   const t = currentTag(), box = $("at-sel");
@@ -502,7 +531,14 @@ export function initMatch() {
   $("at-del-last").addEventListener("click", deleteLast);
   $("results").addEventListener("click", function (e) { const b = e.target.closest("button"); if (!b || b.disabled) return; const t = currentTag(); if (!t) return; setResult(resultsFor(t, layout()).indexOf(b.dataset.res)); });
   $("at-tabs").addEventListener("click", function (e) { const b = e.target.closest("button"); if (b) setTab(b.dataset.t); });
-  $("at-star-filter").addEventListener("click", function () { if (!project()) { toast("Ajoute ce match à un projet pour garder des clips.", false); return; } AT.star = !AT.star; renderAfterTags(); });
+  $("at-filters").addEventListener("click", function (e) {
+    const b = e.target.closest("button"); if (!b) return;
+    const k = b.dataset.f;
+    if (k === "star") { if (!project()) { toast("Ajoute ce match à un projet pour garder des clips.", false); return; } AT.star = !AT.star; }
+    else { AT.star = false; AT.tlFilter.team = k; }
+    renderAfterTags();
+  });
+  $("recent").addEventListener("click", function (e) { const b = e.target.closest("button[data-select]"); if (b) { S.currentTagId = b.dataset.select; renderSelection(); } });
   $("tl-star").addEventListener("click", toggleStar);
   $("tl-prev").addEventListener("click", function () { jump(-1); }); $("tl-next").addEventListener("click", function () { jump(1); });
   $("clip-row").addEventListener("click", function (e) { const b = e.target.closest("button[data-clip]"); if (b) clipAction(b.dataset.clip); });
@@ -643,7 +679,7 @@ export function initMatch() {
     if (b.dataset.team) AT.tlFilter.team = b.dataset.team;
     else if (b.id === "tl-f-empty") AT.tlFilter.hideEmpty = !AT.tlFilter.hideEmpty;
     else if (b.id === "tl-f-reset") AT.tlFilter = { team: "all", hideEmpty: false };
-    renderTimeline(m);
+    renderTimeline(m); renderCodes(m); renderFilters(m);
   });
   document.addEventListener("click", function () { $("tl-filter-menu").hidden = true; });
   window.addEventListener("resize", function () { fit(); const m = cur(); if (m && !$("view-match").hidden) renderTimeline(m); });
